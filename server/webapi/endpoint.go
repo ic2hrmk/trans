@@ -1,4 +1,4 @@
-package framework
+package webapi
 
 const (
 	APIVersion = "/version"
