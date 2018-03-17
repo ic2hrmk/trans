@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export TARGET_NAME="_tclient"
+export TARGET_NAME="tserver"
 
 # Make build
 make build

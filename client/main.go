@@ -29,7 +29,7 @@ func main() {
 	defer img.Close()
 
 	// color for the rect when faces detected
-	blue := color.RGBA{0, 0, 255, 0}
+	blue := color.RGBA{R: 0, G: 0, B: 255, A: 0}
 
 	// load classifier to recognize faces
 	classifier := gocv.NewCascadeClassifier()
