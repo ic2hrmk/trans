@@ -6,13 +6,31 @@ import (
 	"image/color"
 
 	"gocv.io/x/gocv"
+	"github.com/hybridgroup/mjpeg"
+	"net/http"
+	"log"
+	"time"
+)
+
+var (
+	deviceID = 0
+	xmlFile = "data/frontalface.xml"
+	stream *mjpeg.Stream
 )
 
 func main() {
-	deviceID := 0 //strconv.Atoi(os.Args[1])
-	xmlFile := "data/frontalface.xml"// os.Args[2]
+	stream = mjpeg.NewStream()
 
-	// open webcam
+	go capture()
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "src/" + r.URL.Path[1:])
+	})
+	http.Handle("/stream", stream)
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
+}
+
+func capture() {
 	webcam, err := gocv.VideoCaptureDevice(int(deviceID))
 	if err != nil {
 		fmt.Printf("error opening video capture device: %v\n", deviceID)
@@ -20,11 +38,6 @@ func main() {
 	}
 	defer webcam.Close()
 
-	// open display window
-	window := gocv.NewWindow("Face Detect")
-	defer window.Close()
-
-	// prepare image matrix
 	img := gocv.NewMat()
 	defer img.Close()
 
@@ -40,7 +53,6 @@ func main() {
 		return
 	}
 
-	fmt.Printf("start reading camera device: %v\n", deviceID)
 	for {
 		if ok := webcam.Read(img); !ok {
 			fmt.Printf("cannot read device %d\n", deviceID)
@@ -50,7 +62,6 @@ func main() {
 			continue
 		}
 
-		// detect faces
 		rects := classifier.DetectMultiScale(img)
 		fmt.Printf("found %d faces\n", len(rects))
 
@@ -64,10 +75,12 @@ func main() {
 			gocv.PutText(img, "Human", pt, gocv.FontHersheyPlain, 1.2, blue, 2)
 		}
 
-		// show the image in the window, and wait 1 millisecond
-		window.IMShow(img)
-		if window.WaitKey(1) >= 0 {
-			break
-		}
+		buf, _ := gocv.IMEncode(".jpg", img)
+		stream.UpdateJPEG(buf)
+
+		fmt.Println(time.Now())
+		time.Sleep(100 * time.Millisecond)
+		fmt.Println(time.Now())
+
 	}
 }
