@@ -1,86 +1,117 @@
 package main
 
 import (
-	"fmt"
-	"image"
-	"image/color"
-
-	"gocv.io/x/gocv"
-	"github.com/hybridgroup/mjpeg"
-	"net/http"
 	"log"
-	"time"
+	"sync"
+	"reflect"
+
+	event "github.com/ic2hrmk/goevent"
+
+	"trans/client/contract"
+	"trans/client/device/video"
+	"trans/client/device/gps"
+	"trans/client/app/dashboard"
+	"trans/client/app/cloud"
+	"trans/client/app/config"
+	"flag"
 )
 
+// Configurations
 var (
-	deviceID = 0
-	xmlFile = "data/frontalface.xml"
-	stream *mjpeg.Stream
+	CloudAddress string
+	HostAddress  string
+
+	ObjectDescriptorPath string
 )
 
-func main() {
-	stream = mjpeg.NewStream()
+func init() {
+	flag.StringVar(&CloudAddress, "cloud", contract.DefaultCloudAddress, "host name / ip address of remote cloud")
+	flag.StringVar(&HostAddress, "host", contract.DefaultHostAddress, "host address to serve on")
+	flag.StringVar(&ObjectDescriptorPath, "descriptor", contract.FaceDescriptorFile, "OpenCV configuration file")
 
-	go capture()
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "src/" + r.URL.Path[1:])
-	})
-	http.Handle("/stream", stream)
-	log.Fatal(http.ListenAndServe("0.0.0.0:8080", nil))
+	flag.Parse()
 }
 
-func capture() {
-	webcam, err := gocv.VideoCaptureDevice(int(deviceID))
+func main() {
+	PrintSplashScreen()
+	// ReceiveCloudConfigurations()
+	RunApp()
+}
+
+func PrintSplashScreen() {
+	log.Println("================================================")
+	log.Printf("TRANS-CLIENT | VIDEO PROCESS UNIT %s \n", config.Version)
+	log.Println("================================================")
+}
+
+func ReceiveCloudConfigurations() {
+	cloudConfigurator := cloud.AppConfigurator{
+		CloudAddress: CloudAddress,
+	}
+
+	err := cloudConfigurator.ReceiveCloudConfigurations()
 	if err != nil {
-		fmt.Printf("error opening video capture device: %v\n", deviceID)
-		return
+		log.Fatalf("failed to receive cloud configurations: %s\n", err.Error())
 	}
-	defer webcam.Close()
+}
 
-	img := gocv.NewMat()
-	defer img.Close()
+func RunApp() {
+	//	Stream setup
 
-	// color for the rect when faces detected
-	blue := color.RGBA{R: 0, G: 0, B: 255, A: 0}
+	videoStream := event.NewEventStream()
+	gpsStream := event.NewEventStream()
 
-	// load classifier to recognize faces
-	classifier := gocv.NewCascadeClassifier()
-	defer classifier.Close()
+	// Stream listeners setup
 
-	if !classifier.Load(xmlFile) {
-		fmt.Printf("Error reading cascade file: %v\n", xmlFile)
-		return
+	webDashboardServer := dashboard.WebDashboardServer{
+		HostAddress: HostAddress,
 	}
 
-	for {
-		if ok := webcam.Read(img); !ok {
-			fmt.Printf("cannot read device %d\n", deviceID)
-			return
-		}
-		if img.Empty() {
-			continue
-		}
-
-		rects := classifier.DetectMultiScale(img)
-		fmt.Printf("found %d faces\n", len(rects))
-
-		// draw a rectangle around each face on the original image,
-		// along with text identifing as "Human"
-		for _, r := range rects {
-			gocv.Rectangle(img, r, blue, 3)
-
-			size := gocv.GetTextSize("Human", gocv.FontHersheyPlain, 1.2, 2)
-			pt := image.Pt(r.Min.X+(r.Min.X/2)-(size.X/2), r.Min.Y-2)
-			gocv.PutText(img, "Human", pt, gocv.FontHersheyPlain, 1.2, blue, 2)
-		}
-
-		buf, _ := gocv.IMEncode(".jpg", img)
-		stream.UpdateJPEG(buf)
-
-		fmt.Println(time.Now())
-		time.Sleep(100 * time.Millisecond)
-		fmt.Println(time.Now())
-
+	wsDashboardServer := dashboard.WebSocketDashboardServer{
+		HostAddress: HostAddress,
+		StreamMap: map[reflect.Type]string{
+			reflect.TypeOf(contract.VideoEvent{}): contract.WebSocketVideoChannel,
+			reflect.TypeOf(contract.GPSEvent{}):   contract.WebSocketGPSChannel,
+			reflect.TypeOf(contract.ErrorEvent{}): contract.WebSocketErrorChannel,
+		},
 	}
+
+	cloudReporter := cloud.Reporter{
+		CloudAddress: HostAddress,
+	}
+
+	//	Subscription setup
+
+	//	- Web Dashboard
+	videoStream.Subscribe(webDashboardServer.Listen, contract.VideoEventCode)
+
+	//	- Web Socket Dashboard
+	videoStream.Subscribe(wsDashboardServer.Listen, contract.VideoEventCode)
+	videoStream.Subscribe(wsDashboardServer.Listen, contract.VideoErrorEventCode)
+	gpsStream.Subscribe(wsDashboardServer.Listen, contract.GPSEventCode)
+	gpsStream.Subscribe(wsDashboardServer.Listen, contract.GPSErrorEventCode)
+
+	//	- Cloud reporter
+	videoStream.Subscribe(cloudReporter.Listen, contract.VideoEventCode)
+	videoStream.Subscribe(cloudReporter.Listen, contract.VideoErrorEventCode)
+	gpsStream.Subscribe(cloudReporter.Listen, contract.GPSEventCode)
+	gpsStream.Subscribe(cloudReporter.Listen, contract.GPSErrorEventCode)
+
+	var wg sync.WaitGroup
+
+	// @formatter:off
+
+	wg.Add(1); go videoStream.Run()
+	wg.Add(1); go gpsStream.Run()
+
+	wg.Add(1); go video.RunVideoProcessing(ObjectDescriptorPath, videoStream)
+	wg.Add(1); go gps.RunCoordinateProcessing(gpsStream)
+
+	wg.Add(1); go webDashboardServer.Run()
+	wg.Add(1); go wsDashboardServer.Run()
+	wg.Add(1); go cloudReporter.Run()
+
+	// @formatter:on
+
+	wg.Wait()
 }
