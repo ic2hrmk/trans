@@ -13,16 +13,16 @@ type CloudApplicationConfiguration struct {
 }
 
 type TransportInfo struct {
-	Name string
-	Type string
+	Name string	`json:"name"`
+	Type string `json:"type"`
 
-	BoardNumber              string
-	VehicleRegistrationPlate string
+	BoardNumber              string `json:"board_number"`
+	VehicleRegistrationPlate string	`json:"vehicle_registration_plate"`
 
-	SeatCapacity int
-	MaxCapacity  int
+	SeatCapacity int	`json:"seat_capacity"`
+	MaxCapacity  int	`json:"max_capacity"`
 
-	KMLWay []byte
+	KMLWay []byte `json:"-"`
 }
 
 type ReporterConfiguration struct {

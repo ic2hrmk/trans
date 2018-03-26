@@ -25,10 +25,9 @@ type WebDashboardServer struct {
 
 func (wds WebDashboardServer) Run() {
 	log.Println("WEB Dashboard: available at ", wds.HostAddress)
-	http.HandleFunc("/", RootHandler)
 
-	http.HandleFunc(contract.DashboardWebPage, DashboardHandler)
-	log.Printf(" - Dashboard page: %17s\n", contract.DashboardWebPage)
+	http.Handle("/", http.FileServer(http.Dir("./www")))
+	log.Printf(" - Dashboard page: %17s\n", contract.DashboardTemplate)
 
 	http.HandleFunc(contract.APITransportInfo, TransportInfoHandler)
 	log.Printf(" - Current vehicle info: %15s\n", contract.APITransportInfo)
@@ -50,17 +49,18 @@ func (wds WebDashboardServer) Listen(event event.Event) {
 	}
 }
 
-func RootHandler(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, contract.DashboardWebPage, 301)
-}
-
-func DashboardHandler(w http.ResponseWriter, r *http.Request) {
-	http.ServeFile(w, r, contract.DashboardTemplate)
-}
-
 func TransportInfoHandler(w http.ResponseWriter, r *http.Request) {
+	fakeTransportInfo := config.TransportInfo{
+		Name:"LAZ E183D1",
+		Type: "Trolleybus",
+		BoardNumber: "3368",
+		VehicleRegistrationPlate: "3368",
+		SeatCapacity: 30,
+		MaxCapacity: 100,
+	}
+
 	transportInfoJSON, _ := json.MarshalIndent(
-		config.Configuration, "   ", "  ",
+		fakeTransportInfo, "   ", "  ",
 	)
 
 	w.Header().Set("Content-Type", "application/json")

@@ -23,7 +23,8 @@ const (
 	FullBodyDescriptorFile = "data/fullbody.xml"
 
 	//	Front-end
-	DashboardTemplate = "www/dashboard.html"
+	DashboardTemplate = "dashboard.html"
+	LoginTemplate = "login.html"
 )
 
 //	Host addresses
