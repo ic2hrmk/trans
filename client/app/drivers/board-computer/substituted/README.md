@@ -1,0 +1,1 @@
+For cloud based vehicle resolving
