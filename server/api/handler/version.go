@@ -1,9 +1,9 @@
-package controller
+package handler
 
 import (
 	"github.com/emicklei/go-restful"
 
-	"trans/server/model"
+	"trans/server/api/model"
 	"trans/server/webapi"
 )
 
