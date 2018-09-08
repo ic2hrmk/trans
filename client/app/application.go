@@ -6,20 +6,20 @@ import (
 	"sync"
 	"trans/client/app/cloud/reporter"
 	"trans/client/app/contracts"
+	"trans/client/app/drivers/video-classifier/opencv/haar/capturer/web-camera"
+	"trans/client/app/drivers/video-classifier/opencv/haar/cascade"
 
 	event "github.com/ic2hrmk/goevent"
 
 	mockCloudReporter "trans/client/app/cloud/reporter/mock"
-	mockBoardComputer "trans/client/app/drivers/board-computer/mock"
-	mockGPSReceiver "trans/client/app/drivers/gps-module/mock"
-	mockVideoClassifier "trans/client/app/drivers/video-classifier/opencv/mock"
-
 	"trans/client/app/config"
 	"trans/client/app/dashboard"
 	"trans/client/app/dashboard/web"
 	"trans/client/app/dashboard/ws"
 	"trans/client/app/drivers/board-computer"
+	mockBoardComputer "trans/client/app/drivers/board-computer/mock"
 	"trans/client/app/drivers/gps-module"
+	mockGPSReceiver "trans/client/app/drivers/gps-module/mock"
 	"trans/client/app/drivers/video-classifier"
 )
 
@@ -134,11 +134,22 @@ func (app *Application) printSplashScreen() {
 }
 
 func (app *Application) configure(configuration *config.Configuration) error {
+	videoCapturer, err := web_camera.NewVideoCamera(configuration.OpenCV.CameraDeviceID)
+	if err != nil {
+		return err
+	}
+
 	app.webDashboard = web.NewWebDashboard(configuration.Dashboard.WebHostAddress)
 	app.webSocketDashboard = ws.NewWebSocketDashboardServer(configuration.Dashboard.WSHostAddress)
 
+	app.videoClassifier, err = cascade.NewHaarCascadeClassifierWithDescriptor(
+		videoCapturer, configuration.OpenCV.DescriptorPath)
+	if err != nil {
+		return err
+	}
+
 	app.boardComputer = mockBoardComputer.NewMockedBoardComputer()
-	app.videoClassifier = mockVideoClassifier.NewMockedVideoClassifier()
+	//app.videoClassifier = mockVideoClassifier.NewMockedVideoClassifier()
 	app.geoPositionModule = mockGPSReceiver.NewMockedGPSReceiver(
 		mockGPSReceiver.TestDuration, mockGPSReceiver.KievLatitude, mockGPSReceiver.KievLongitude)
 

@@ -1,6 +1,7 @@
 package mock
 
 import (
+	"log"
 	"math/rand"
 	"time"
 
@@ -20,8 +21,8 @@ const (
 type mockedGPSReceiver struct {
 	requestDelay time.Duration
 
-	startLatitude  float32
-	startLongitude float32
+	latitude  float32
+	longitude float32
 
 	streams []*event.EventStream
 }
@@ -32,9 +33,9 @@ func NewMockedGPSReceiver(
 	startLongitude float32,
 ) *mockedGPSReceiver {
 	return &mockedGPSReceiver{
-		requestDelay:   requestDelay,
-		startLatitude:  startLatitude,
-		startLongitude: startLongitude,
+		requestDelay: requestDelay,
+		latitude:     startLatitude,
+		longitude:    startLongitude,
 	}
 }
 
@@ -91,10 +92,13 @@ func (r *mockedGPSReceiver) GetCurrentPosition() (latitude, longitude float32, e
 		return latitude, longitude, errors.ErrFailedToReadFromGPSModule
 	}
 
-	const degreeChangeDelta = 0.001
+	const degreeChangeDelta = 0.0001
 
-	r.startLatitude += (rand.Float32() - 0.5) * degreeChangeDelta
-	r.startLongitude += (rand.Float32() - 0.5) * degreeChangeDelta
+	r.latitude += (rand.Float32() - 0.5) * degreeChangeDelta
+	r.longitude += (rand.Float32() - 0.5) * degreeChangeDelta
 
-	return
+	log.Printf("[mocked-gps-receiver] new position -> Lat: %f, Lon: %f\n",
+		r.latitude, r.longitude)
+
+	return r.latitude, r.longitude, nil
 }

@@ -13,5 +13,4 @@ type WebDashboard interface {
 
 type WebSocketDashboard interface {
 	Dashboard
-	SendBroadcast(socketPath string, payload interface{})
 }

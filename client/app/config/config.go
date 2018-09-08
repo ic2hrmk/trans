@@ -73,6 +73,7 @@ func (c *DashboardConfiguration) Validate() error {
 }
 
 type OpenCVConfiguration struct {
+	CameraDeviceID int
 	FrameRate      int
 	DescriptorPath string
 }

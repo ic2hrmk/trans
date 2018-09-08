@@ -21,6 +21,7 @@ func resolveCLIConfigurations(config *Configuration) {
 	flag.StringVar(&config.Dashboard.WebHostAddress, "web", DefaultWebHostAddress, "host address to serve web interface")
 	flag.StringVar(&config.Dashboard.WSHostAddress, "ws", DefaultWSHostAddress, "host address to serve web-socket server")
 	flag.StringVar(&config.OpenCV.DescriptorPath, "descriptor", FaceDescriptorFile, "OpenCV configuration file")
+	flag.IntVar(&config.OpenCV.CameraDeviceID, "cameraID", DefaultCameraID, "camera device's ID")
 	flag.IntVar(&config.OpenCV.FrameRate, "framerate", DefaultFrameRate, "OpenCV camera frame rate configuration")
 
 	flag.Parse()

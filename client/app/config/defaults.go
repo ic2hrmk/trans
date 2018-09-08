@@ -6,12 +6,13 @@ import "time"
 const (
 	DefaultCloudAddress   = ":5050"
 	DefaultWebHostAddress = ":8080"
-	DefaultWSHostAddress  = ":8080"
+	DefaultWSHostAddress  = ":8081"
 )
 
 // Camera settings
 const (
 	DefaultFrameRate = 5
+	DefaultCameraID  = 0
 )
 
 // Cloud

@@ -1,4 +1,4 @@
-package device
+package web_camera
 
 import "gocv.io/x/gocv"
 

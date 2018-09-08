@@ -15,6 +15,7 @@ type WebDashboardServer struct {
 	hostAddress string
 	streamMap   map[reflect.Type]string
 	videoStream *mjpeg.Stream
+	httpServer  *http.ServeMux
 }
 
 func NewWebDashboard(
@@ -44,13 +45,15 @@ func (wds *WebDashboardServer) Run() error {
 	log.Printf(" - Current vehicle info: %15s\n", apiTransportInfo)
 	log.Printf(" - Application verion: %15s\n", apiVersionInfo)
 
-	http.Handle("/", http.FileServer(http.Dir("./www")))
-	http.HandleFunc(apiTransportInfo, wds.transportInfoHandler)
-	http.HandleFunc(apiVideoStream, wds.videoStreamHandler)
-	http.HandleFunc(apiVersionInfo, wds.versionInfoHandler)
+	wds.httpServer = http.NewServeMux()
+
+	wds.httpServer.Handle("/", http.FileServer(http.Dir("./www")))
+	wds.httpServer.HandleFunc(apiTransportInfo, wds.transportInfoHandler)
+	wds.httpServer.HandleFunc(apiVideoStream, wds.videoStreamHandler)
+	wds.httpServer.HandleFunc(apiVersionInfo, wds.versionInfoHandler)
 	// http.Handle(contract.APIVideoStream, wds.videoStream)
 
-	return http.ListenAndServe(wds.hostAddress, nil)
+	return http.ListenAndServe(wds.hostAddress, wds.httpServer)
 }
 
 func (wds *WebDashboardServer) Listen(event event.Event) {

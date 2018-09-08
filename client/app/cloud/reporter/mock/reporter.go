@@ -30,7 +30,7 @@ func (r *mockedCloudReporter) Run() error {
 	for {
 		time.Sleep(r.reportPeriod)
 
-		log.Printf("[mock-cloud-reporter] report has collected [%d] events", r.eventsInPeriodReceived)
+		log.Printf("[mocked-cloud-reporter] reporter has collected [%d] events", r.eventsInPeriodReceived)
 
 		// TODO: make it thread safe
 		r.eventsInPeriodReceived = 0
