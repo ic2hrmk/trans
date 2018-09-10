@@ -1,6 +1,7 @@
 package web
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"reflect"
@@ -16,6 +17,23 @@ type WebDashboardServer struct {
 	streamMap   map[reflect.Type]string
 	videoStream *mjpeg.Stream
 	httpServer  *http.ServeMux
+	cache       *Cache
+}
+
+type Cache struct {
+	GPSEvent   event.Event
+	VideoEvent event.Event
+	ErrorEvent event.Event
+}
+
+func NewCache() *Cache {
+	return &Cache{
+		VideoEvent: contracts.VideoEvent{},
+		GPSEvent:   contracts.GPSEvent{},
+		ErrorEvent: contracts.ErrorEvent{
+			Error: errors.New(""),
+		},
+	}
 }
 
 func NewWebDashboard(
@@ -24,6 +42,7 @@ func NewWebDashboard(
 	return &WebDashboardServer{
 		hostAddress: hostAddress,
 		videoStream: mjpeg.NewStream(),
+		cache:       NewCache(),
 	}
 }
 
@@ -34,6 +53,7 @@ func NewWebDashboardWithExternalVideoStream(
 	return &WebDashboardServer{
 		hostAddress: hostAddress,
 		videoStream: videoStream,
+		cache:       NewCache(),
 	}
 }
 
@@ -42,6 +62,7 @@ func (wds *WebDashboardServer) Run() error {
 
 	log.Printf(" - Dashboard page: %17s\n", dashboardTemplate)
 	log.Printf(" - Video stream: %20s\n", apiVideoStream)
+	log.Printf(" - Latest events: %19s\n", apiLatestEvents)
 	log.Printf(" - Current vehicle info: %15s\n", apiTransportInfo)
 	log.Printf(" - Application verion: %15s\n", apiVersionInfo)
 
@@ -49,9 +70,9 @@ func (wds *WebDashboardServer) Run() error {
 
 	wds.httpServer.Handle("/", http.FileServer(http.Dir("./www")))
 	wds.httpServer.HandleFunc(apiTransportInfo, wds.transportInfoHandler)
+	wds.httpServer.HandleFunc(apiLatestEvents, wds.latestEventsHandler)
 	wds.httpServer.HandleFunc(apiVideoStream, wds.videoStreamHandler)
 	wds.httpServer.HandleFunc(apiVersionInfo, wds.versionInfoHandler)
-	// http.Handle(contract.APIVideoStream, wds.videoStream)
 
 	return http.ListenAndServe(wds.hostAddress, wds.httpServer)
 }
@@ -61,13 +82,15 @@ func (wds *WebDashboardServer) Listen(event event.Event) {
 	case contracts.VideoEvent:
 		videoFrame := event.(contracts.VideoEvent)
 		wds.videoStream.UpdateJPEG(videoFrame.Frame)
+		wds.cache.VideoEvent = event
 
 	case contracts.GPSEvent:
-		// Nothing to serve
+		wds.cache.GPSEvent = event
 
 	case contracts.ErrorEvent:
 		errorEvent := event.(contracts.ErrorEvent).Error
 		log.Printf("[web-dashboard] error event received: %s\n", errorEvent.Error())
+		wds.cache.ErrorEvent = event
 
 	default:
 		log.Println("[web-dashboard] unregistered event received: " + reflect.TypeOf(event).String())

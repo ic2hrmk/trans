@@ -1,4 +1,5 @@
 .idea
 *.iml
+.env
 
 client/_tclient+OLD_BUILD
