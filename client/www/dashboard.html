@@ -37,7 +37,7 @@
 
         <!-- Sidebar -->
         <div class="navbar-default sidebar" role="navigation">
-            <div class="sidebar-nav navbar-collapse">
+            <div class="sidebar-nav navbar-collapse" style="margin-bottom: 50px">
                 <div class="card" style="padding:7px">
                     <div class="card-body">
                         <h3 class="card-title">
@@ -78,19 +78,12 @@
     </nav>
 
     <!-- Page Content -->
-    <div id="page-wrapper">
-        <div class="container-fluid" style="margin-top: 50px">
-            <div class="row">
-                <div class="col-md-6">
-                    <img src='api/stream' width="100%" height="100%">
-                </div>
-                <div class="col-md-4">
-                    <div id="map"></div>
-                </div>
-                <div class="col-md-2">
-                </div>
-            </div>
-        </div>
+    <div id="map-wrapper" >
+       <div id="map"></div>
+    </div>
+
+    <div id="video-wrapper">
+         <img src='api/stream' width="100%" height="100%">
     </div>
 </div>
 
@@ -160,9 +153,11 @@
     };
 </script>
 
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?callback=initMap">
+</script>
 
-<script src="https://maps.googleapis.com/maps/api/js?callback=initMap"
-        async defer></script>
+
 <script>
     var vehicleMarker = {};
     var map = {};
@@ -177,7 +172,7 @@
                 position.lat = data.gps_event.latitude;
                 position.lng = data.gps_event.longitude;
             },
-            async:false
+            async: false
         });
 
         return position
@@ -192,7 +187,7 @@
             success: function (data) {
                 transportInfo.name = data.name;
             },
-            async:false
+            async: false
         });
 
         return transportInfo;
@@ -215,9 +210,54 @@
     }
 
     function moveVehicle(vehicle, latitude, longitude) {
-         vehicle.setPosition(new google.maps.LatLng(latitude, longitude));
+        vehicle.setPosition(new google.maps.LatLng(latitude, longitude));
     }
 
+</script>
+
+<script>
+    dragElement(document.getElementById("video-wrapper"));
+
+    function dragElement(elmnt) {
+        var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        if (document.getElementById(elmnt.id + "-header")) {
+            /* if present, the header is where you move the DIV from:*/
+            document.getElementById(elmnt.id + "-header").onmousedown = dragMouseDown;
+        } else {
+            /* otherwise, move the DIV from anywhere inside the DIV:*/
+            elmnt.onmousedown = dragMouseDown;
+        }
+
+        function dragMouseDown(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // get the mouse cursor position at startup:
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            document.onmouseup = closeDragElement;
+            // call a function whenever the cursor moves:
+            document.onmousemove = elementDrag;
+        }
+
+        function elementDrag(e) {
+            e = e || window.event;
+            e.preventDefault();
+            // calculate the new cursor position:
+            pos1 = pos3 - e.clientX;
+            pos2 = pos4 - e.clientY;
+            pos3 = e.clientX;
+            pos4 = e.clientY;
+            // set the element's new position:
+            elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+            elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        }
+
+        function closeDragElement() {
+            /* stop moving when mouse button is released:*/
+            document.onmouseup = null;
+            document.onmousemove = null;
+        }
+    }
 </script>
 
 </body>
