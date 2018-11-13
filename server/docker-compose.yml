@@ -1,0 +1,34 @@
+version: '3.1'
+
+volumes:
+  gis_mongo_data:
+    external: true
+
+services:
+  mongo:
+    image: mongo
+    volumes:
+      - gis_mongo_data:/data/db
+    ports:
+      - 27037:27017
+
+  mongo_express:
+    image: mongo-express
+    ports:
+      - 8193:8081
+    links:
+      - mongo
+    depends_on:
+      - mongo
+
+  route:
+    image: golang:latest
+    volumes:
+    - .:${GOPATH}/src/trans/
+    working_dir: ${GOPATH}/src/trans/server
+    command: go run ./gateway/main.go -kind=auth -env=./test-pack/docker/env
+    ports:
+    - 8081:8080
+    restart: always
+    networks:
+    - web

@@ -1,4 +1,4 @@
-package main
+package entry
 
 import (
 	"log"
@@ -7,6 +7,8 @@ import (
 	"trans/server/webapi"
 	_ "trans/server/controller"
 )
+
+
 
 func main() {
 	server := &http.Server{Addr: ":8080", Handler: webapi.InitRestContainer()}
