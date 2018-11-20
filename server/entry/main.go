@@ -1,16 +1,43 @@
-package entry
+package main
 
 import (
 	"log"
-	"net/http"
 
-	"trans/server/webapi"
-	_ "trans/server/controller"
+	"trans/server/registry"
+	"trans/server/shared/init"
 )
 
-
-
 func main() {
-	server := &http.Server{Addr: ":8080", Handler: webapi.InitRestContainer()}
-	log.Fatal(server.ListenAndServe())
+	//
+	// Load startup flags
+	//
+	flags := init.LoadFlags()
+
+	//
+	// Load env.
+	//
+	if flags.EnvFile != "" {
+		init.LoadEnvFile(flags.EnvFile)
+	}
+
+	//
+	// Select service
+	//
+	serviceFactory, err := registry.Get(flags.Kind)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//
+	// Create service
+	//
+	service, err := serviceFactory()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//
+	// Run till the death comes
+	//
+	log.Fatal(service.Serve())
 }

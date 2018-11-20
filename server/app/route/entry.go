@@ -2,6 +2,8 @@ package route
 
 import "trans/server/app"
 
-func Factory() (app.MicroService, error) {
+const ServiceName = "route"
+
+func FactoryMethod() (app.MicroService, error) {
 	return nil, nil
 }

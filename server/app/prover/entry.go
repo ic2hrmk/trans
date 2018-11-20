@@ -2,6 +2,8 @@ package prover
 
 import "trans/server/app"
 
-func Factory() (app.MicroService, error) {
+const ServiceName = "prover"
+
+func FactoryMethod() (app.MicroService, error) {
 	return nil, nil
 }

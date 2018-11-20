@@ -1,8 +1,8 @@
-package collector
+package vehicle
 
 import "trans/server/app"
 
-const ServiceName = "collector"
+const ServiceName = "vehicle"
 
 func FactoryMethod() (app.MicroService, error) {
 	return nil, nil
