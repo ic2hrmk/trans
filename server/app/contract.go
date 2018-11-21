@@ -1,5 +1,5 @@
 package app
 
 type MicroService interface {
-	Serve() error
+	Serve(address string) error
 }

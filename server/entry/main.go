@@ -39,5 +39,5 @@ func main() {
 	//
 	// Run till the death comes
 	//
-	log.Fatal(service.Serve())
+	log.Fatal(service.Serve(flags.Address))
 }
