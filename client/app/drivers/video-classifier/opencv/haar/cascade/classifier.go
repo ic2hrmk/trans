@@ -3,11 +3,10 @@ package cascade
 import (
 	"errors"
 	"fmt"
+	event "github.com/ic2hrmk/go-event"
 	"image/color"
 	"os"
 	"time"
-
-	event "github.com/ic2hrmk/goevent"
 
 	"gocv.io/x/gocv"
 	"trans/client/app/contracts"
@@ -20,6 +19,8 @@ type haarCascadeVideoClassifier struct {
 
 	streams []*event.EventStream
 }
+
+const frameReceivingFailureDelay = 250 * time.Millisecond
 
 func NewHaarCascadeClassifierWithDescriptor(
 	videoCapture capturer.VideoCapture,
@@ -59,7 +60,7 @@ func (c *haarCascadeVideoClassifier) execute() error {
 	for {
 		eventObject := event.EventObject{}
 
-		ok := c.videoCapture.ReadFrame(frame)
+		ok := c.videoCapture.ReadFrame(&frame)
 		if !ok || frame.Empty() {
 			//
 			// Throw error event
@@ -68,6 +69,9 @@ func (c *haarCascadeVideoClassifier) execute() error {
 			eventObject.Event = contracts.ErrorEvent{
 				Error: errors.New("failed to read from capture device (frame is empty)"),
 			}
+
+			time.Sleep(frameReceivingFailureDelay)
+
 		} else {
 			//
 			// Try to receive classification info
@@ -75,15 +79,15 @@ func (c *haarCascadeVideoClassifier) execute() error {
 			objectList := c.cascadeClassifier.DetectMultiScale(frame)
 
 			for _, r := range objectList {
-				gocv.Rectangle(frame, r, objectBorderColor, 2)
+				gocv.Rectangle(&frame, r, objectBorderColor, 2)
 			}
 
 			image, _ := gocv.IMEncode(".jpg", frame)
 
 			eventObject.EventType = contracts.VideoEventCode
 			eventObject.Event = contracts.VideoEvent{
-				Frame:         image,
-				ObjectCounter: len(objectList),
+				Frame:          image,
+				ObjectsCounter: uint64(len(objectList)),
 			}
 			time.Sleep(250 * time.Millisecond)
 		}

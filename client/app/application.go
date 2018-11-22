@@ -1,14 +1,17 @@
 package app
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"sync"
+	"trans/client/app/persistence/history/service/archive"
 
-	event "github.com/ic2hrmk/goevent"
+	event "github.com/ic2hrmk/go-event"
 	mockCloudReporter "trans/client/app/cloud/reporter/mock"
 	mockBoardComputer "trans/client/app/drivers/board-computer/mock"
 	mockGPSReceiver "trans/client/app/drivers/gps-module/mock"
+	mockVideoClassifier "trans/client/app/drivers/video-classifier/opencv/mock"
 
 	"trans/client/app/cloud/reporter"
 	"trans/client/app/config"
@@ -19,8 +22,11 @@ import (
 	"trans/client/app/drivers/board-computer"
 	"trans/client/app/drivers/gps-module"
 	"trans/client/app/drivers/video-classifier"
+	"trans/client/app/drivers/video-classifier/opencv/haar/capturer"
+	"trans/client/app/drivers/video-classifier/opencv/haar/capturer/tape"
 	"trans/client/app/drivers/video-classifier/opencv/haar/capturer/web-camera"
 	"trans/client/app/drivers/video-classifier/opencv/haar/cascade"
+	"trans/client/app/persistence/history"
 )
 
 type Application struct {
@@ -53,7 +59,10 @@ type Application struct {
 	geoPositionModule gps_module.GPSPositionModule
 	videoClassifier   video_classifier.Classifier
 
-	// TODO: results container
+	//
+	// Persistence
+	//
+	archive history.Archive
 }
 
 func Run() {
@@ -117,12 +126,20 @@ func (app *Application) init() error {
 	app.videoStream.Subscribe(app.cloudReporter.Listen, contracts.VideoEventCode)
 	app.videoStream.Subscribe(app.cloudReporter.Listen, contracts.VideoErrorEventCode)
 
+	//
+	// Optional: persistence
+	//
+	if app.config.Persistence.IsEnabled {
+		app.gpsStream.Subscribe(app.archive.Listen, contracts.GPSEventCode)
+		app.gpsStream.Subscribe(app.archive.Listen, contracts.GPSErrorEventCode)
+		app.videoStream.Subscribe(app.archive.Listen, contracts.VideoEventCode)
+		app.videoStream.Subscribe(app.archive.Listen, contracts.VideoErrorEventCode)
+	}
+
 	// Assign producers
 
 	app.geoPositionModule.Subscribe(app.gpsStream)
 	app.videoClassifier.Subscribe(app.videoStream)
-
-	// TODO: add result listener subscription
 
 	return nil
 }
@@ -134,28 +151,83 @@ func (app *Application) printSplashScreen() {
 }
 
 func (app *Application) configure(configuration *config.Configuration) error {
-	videoCapturer, err := web_camera.NewVideoCamera(configuration.OpenCV.CameraDeviceID)
-	if err != nil {
-		return err
-	}
+	var err error
 
+	//
+	// Dashboard init.
+	//
 	app.webDashboard = web.NewWebDashboard(configuration.Dashboard.WebHostAddress)
 	app.webSocketDashboard = ws.NewWebSocketDashboardServer(configuration.Dashboard.WSHostAddress)
 
-	//app.videoClassifier = mockVideoClassifier.NewMockedVideoClassifier()
+	//
+	// Video classifier init.
+	//
+	if configuration.OpenCV.IsMocked {
+		app.videoClassifier = mockVideoClassifier.NewMockedVideoClassifier()
+	} else {
+		//
+		// Video capture init.
+		//
+		var source capturer.VideoCapture
 
-	app.videoClassifier, err = cascade.NewHaarCascadeClassifierWithDescriptor(
-		videoCapturer, configuration.OpenCV.DescriptorPath)
-	if err != nil {
-		return err
+		switch {
+		case configuration.OpenCV.Source.IsFileSourced():
+			source, err = tape.NewVideoFile(configuration.OpenCV.Source.PrerecordedFile)
+
+		case configuration.OpenCV.Source.IsDeviceSourced():
+			source, err = web_camera.NewVideoCamera(configuration.OpenCV.Source.CameraDeviceID)
+
+		default:
+			err = fmt.Errorf("video source isn't selected")
+
+		}
+
+		if err != nil {
+			return err
+		}
+
+		app.videoClassifier, err = cascade.NewHaarCascadeClassifierWithDescriptor(
+			source, configuration.OpenCV.DescriptorPath)
+		if err != nil {
+			return err
+		}
 	}
 
+	//
+	// Board computer init.
+	//
 	app.boardComputer = mockBoardComputer.NewMockedBoardComputer()
+
+	//
+	// GPS Module init.
+	//
 	app.geoPositionModule = mockGPSReceiver.NewMockedGPSReceiver(
 		mockGPSReceiver.TestDuration, mockGPSReceiver.KievLatitude, mockGPSReceiver.KievLongitude)
 
+	//
+	// Cloud reporter init.
+	//
 	app.cloudReporter = mockCloudReporter.NewMockedCloudReporter(
 		configuration.Cloud.Host, configuration.Cloud.ReportPeriod)
+
+	//
+	// Persistence init.
+	//
+	if configuration.Persistence.IsEnabled {
+		switch configuration.Persistence.PersistenceDialog {
+		case "mongo":
+			app.archive, err = archive.InitMongoArchivePersistence(configuration.Persistence.PersistenceURL)
+
+		default:
+			err = fmt.Errorf("unknown persistence dialect")
+		}
+
+		if err != nil {
+			return err
+		}
+	}
+
+	app.config = configuration
 
 	return nil
 }

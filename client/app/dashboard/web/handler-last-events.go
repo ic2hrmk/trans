@@ -14,7 +14,7 @@ func (wds *WebDashboardServer) latestEventsHandler(w http.ResponseWriter, r *htt
 
 	fakeTransportInfo := dto.LatestReceivedEvents{
 		VideoEvent: dto.VideoEvent{
-			PeopleOnBoard: latestVideoEvent.ObjectCounter,
+			PeopleOnBoard: latestVideoEvent.ObjectsCounter,
 		},
 		GPSEvent: dto.GPSEvent{
 			Latitude:  latestGPSEvent.Latitude,
