@@ -1,12 +1,12 @@
 package neon_6m
 
-import "github.com/ic2hrmk/go-event"
+import "github.com/ic2hrmk/goevent"
 
 type neon6MR struct {
 	devicePath string
 }
 
-func (r *neon6MR) Subscribe(coordinateEventStream *go_event.EventStream) {
+func (r *neon6MR) Subscribe(coordinateEventStream *goevent.EventStream) {
 	panic("implement me")
 }
 

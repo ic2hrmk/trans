@@ -11,9 +11,8 @@ const (
 
 // Camera settings
 const (
-	DefaultFrameRate   = 5
-	DefaultCameraID    = 0
-	DefaultVideoSource = deviceVideoSource
+	DefaultFrameRate = 5
+	DefaultCameraID  = 0
 )
 
 // Cloud

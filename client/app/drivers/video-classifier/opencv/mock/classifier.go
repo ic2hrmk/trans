@@ -8,7 +8,7 @@ import (
 	"math/rand"
 	"time"
 
-	event "github.com/ic2hrmk/go-event"
+	event "github.com/ic2hrmk/goevent"
 
 	"trans/client/app/contracts"
 )
@@ -48,8 +48,8 @@ func (c *mockedVideoClassifier) execute() error {
 		c.notifySubscribers(event.EventObject{
 			EventType: contracts.VideoEventCode,
 			Event: contracts.VideoEvent{
-				Frame:          frame,
-				ObjectsCounter: 0,
+				Frame:         frame,
+				ObjectCounter: 0,
 			},
 		})
 
