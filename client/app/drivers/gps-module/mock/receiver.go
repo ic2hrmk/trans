@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"time"
 
-	event "github.com/ic2hrmk/goevent"
+	event "github.com/ic2hrmk/go-event"
 
 	"trans/client/app/contracts"
 	"trans/client/app/drivers/gps-module/errors"

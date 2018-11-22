@@ -17,7 +17,7 @@ func NewVideoCamera(deviceID int) (*camera, error) {
 	}, nil
 }
 
-func (c *camera) ReadFrame(frame gocv.Mat) bool {
+func (c *camera) ReadFrame(frame *gocv.Mat) bool {
 	return c.captureDevice.Read(frame)
 }
 

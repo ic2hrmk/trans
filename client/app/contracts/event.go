@@ -1,6 +1,6 @@
 package contracts
 
-import event "github.com/ic2hrmk/goevent"
+import event "github.com/ic2hrmk/go-event"
 
 type EventProducer interface {
 	Subscribe(*event.EventStream)
@@ -32,6 +32,7 @@ const (
 type GPSEvent struct {
 	Latitude  float32
 	Longitude float32
+	Height    float32
 }
 
 //
@@ -42,6 +43,6 @@ const (
 )
 
 type VideoEvent struct {
-	Frame         []byte
-	ObjectCounter int
+	Frame          []byte
+	ObjectsCounter uint64
 }

@@ -1,29 +1,27 @@
 package config
 
 import (
-	"errors"
+	"log"
 	"os"
 )
 
-type UniqueIdentifier string
-
 const (
-	transClientUniqueIdentifierEnvVar = "TRANS_CLIENT_UNIQUE_IDENTIFIER"
+	transClientUniqueIdentifierEnvVar   = "TRANS_CLIENT_UNIQUE_IDENTIFIER"
+	transClientPersistenceDialectEnvVar = "TRANS_CLIENT_PERSISTENCE_DIALECT"
+	transClientPersistenceDbURLEnvVar   = "TRANS_CLIENT_PERSISTENCE_DB_URL"
 )
 
-func (c *UniqueIdentifier) Validate() error {
-	if c == nil {
-		return errors.New("unique identifier is nil")
+func resolveEnvironmentConfigurations(config *Configuration) {
+	config.AppInfo.UniqueIdentifier = os.Getenv(transClientUniqueIdentifierEnvVar)
+
+	config.Persistence.PersistenceDialog = os.Getenv(transClientPersistenceDialectEnvVar)
+	config.Persistence.PersistenceURL = os.Getenv(transClientPersistenceDbURLEnvVar)
+
+	if config.Persistence.PersistenceDialog == memcachePersistenceDialect ||
+		config.Persistence.PersistenceDialog == "" {
+
+		log.Println("[env-resolver] persistence goes to RAM")
+
+		config.Persistence.IsEnabled = false
 	}
-
-	if *c == "" {
-		return errors.New("unique identifier is empty")
-	}
-
-	return nil
-}
-
-func GetUniqueIdentifier() *UniqueIdentifier {
-	value := UniqueIdentifier(os.Getenv(transClientUniqueIdentifierEnvVar))
-	return &value
 }
