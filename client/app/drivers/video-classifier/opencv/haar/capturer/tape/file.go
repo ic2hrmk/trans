@@ -17,7 +17,7 @@ func NewVideoFile(filePath string) (*tape, error) {
 	}, nil
 }
 
-func (c *tape) ReadFrame(frame *gocv.Mat) bool {
+func (c *tape) ReadFrame(frame gocv.Mat) bool {
 	return c.capturedFile.Read(frame)
 }
 

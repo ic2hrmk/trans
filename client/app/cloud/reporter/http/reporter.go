@@ -1,7 +1,7 @@
 package reporter
 
 import (
-	event "github.com/ic2hrmk/go-event"
+	event "github.com/ic2hrmk/goevent"
 	"log"
 	"time"
 )
