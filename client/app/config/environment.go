@@ -14,11 +14,11 @@ const (
 func resolveEnvironmentConfigurations(config *Configuration) {
 	config.AppInfo.UniqueIdentifier = os.Getenv(transClientUniqueIdentifierEnvVar)
 
-	config.Persistence.PersistenceDialog = os.Getenv(transClientPersistenceDialectEnvVar)
+	config.Persistence.PersistenceDialect = os.Getenv(transClientPersistenceDialectEnvVar)
 	config.Persistence.PersistenceURL = os.Getenv(transClientPersistenceDbURLEnvVar)
 
-	if config.Persistence.PersistenceDialog == memcachePersistenceDialect ||
-		config.Persistence.PersistenceDialog == "" {
+	if config.Persistence.PersistenceDialect == memcachePersistenceDialect ||
+		config.Persistence.PersistenceDialect == "" {
 
 		log.Println("[env-resolver] persistence goes to RAM")
 

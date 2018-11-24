@@ -1,12 +1,13 @@
 package archive
 
 import (
-	event "github.com/ic2hrmk/go-event"
 	"log"
 	"reflect"
 	"time"
-	"trans/client/app/contracts"
 
+	event "github.com/ic2hrmk/go-event"
+
+	"trans/client/app/contracts"
 	"trans/client/app/persistence/history"
 )
 
@@ -26,8 +27,6 @@ func NewArchiveService(
 }
 
 func (rcv *ArchiveService) Listen(event event.Event) {
-	log.Println("[archive-service] event received", event)
-
 	switch event.(type) {
 	case contracts.VideoEvent:
 		rcv.AddVideoEvent(history.NewVideoEventRecordFromEvent(event.(contracts.VideoEvent)))

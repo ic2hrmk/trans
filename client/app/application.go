@@ -126,15 +126,10 @@ func (app *Application) init() error {
 	app.videoStream.Subscribe(app.cloudReporter.Listen, contracts.VideoEventCode)
 	app.videoStream.Subscribe(app.cloudReporter.Listen, contracts.VideoErrorEventCode)
 
-	//
-	// Optional: persistence
-	//
-	if app.config.Persistence.IsEnabled {
-		app.gpsStream.Subscribe(app.archive.Listen, contracts.GPSEventCode)
-		app.gpsStream.Subscribe(app.archive.Listen, contracts.GPSErrorEventCode)
-		app.videoStream.Subscribe(app.archive.Listen, contracts.VideoEventCode)
-		app.videoStream.Subscribe(app.archive.Listen, contracts.VideoErrorEventCode)
-	}
+	app.gpsStream.Subscribe(app.archive.Listen, contracts.GPSEventCode)
+	app.gpsStream.Subscribe(app.archive.Listen, contracts.GPSErrorEventCode)
+	app.videoStream.Subscribe(app.archive.Listen, contracts.VideoEventCode)
+	app.videoStream.Subscribe(app.archive.Listen, contracts.VideoErrorEventCode)
 
 	// Assign producers
 
@@ -213,18 +208,18 @@ func (app *Application) configure(configuration *config.Configuration) error {
 	//
 	// Persistence init.
 	//
-	if configuration.Persistence.IsEnabled {
-		switch configuration.Persistence.PersistenceDialog {
-		case "mongo":
-			app.archive, err = archive.InitMongoArchivePersistence(configuration.Persistence.PersistenceURL)
+	switch configuration.Persistence.PersistenceDialect {
+	case "mongo":
+		app.archive, err = archive.InitMongoArchivePersistence(configuration.Persistence.PersistenceURL)
+	case "", "memcache":
+		app.archive, err = archive.InitMemCacheArchivePersistence()
 
-		default:
-			err = fmt.Errorf("unknown persistence dialect")
-		}
+	default:
+		err = fmt.Errorf("unknown persistence dialect")
+	}
 
-		if err != nil {
-			return err
-		}
+	if err != nil {
+		return err
 	}
 
 	app.config = configuration

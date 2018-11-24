@@ -161,9 +161,9 @@ func (c *DebugConfiguration) Validate() error {
 }
 
 type PersistenceConfiguration struct {
-	IsEnabled         bool
-	PersistenceDialog string
-	PersistenceURL    string
+	IsEnabled          bool
+	PersistenceDialect string
+	PersistenceURL     string
 }
 
 const (
@@ -173,7 +173,7 @@ const (
 
 func (c *PersistenceConfiguration) Validate() error {
 	return validation.ValidateStruct(c,
-		validation.Field(&c.PersistenceDialog, validation.In(
+		validation.Field(&c.PersistenceDialect, validation.In(
 			mongoPersistenceDialect,
 			memcachePersistenceDialect,
 		)),
