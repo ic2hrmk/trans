@@ -6,20 +6,24 @@ import (
 )
 
 type Configuration struct {
-	Cloud     *CloudConfiguration
-	GPS       *GPSConfiguration
-	OpenCV    *OpenCVConfiguration
-	Dashboard *DashboardConfiguration
-	AppInfo   *VersionInfo
+	Cloud       *CloudConfiguration
+	GPS         *GPSConfiguration
+	OpenCV      *OpenCVConfiguration
+	Dashboard   *DashboardConfiguration
+	Debug       *DebugConfiguration
+	Persistence *PersistenceConfiguration
+	AppInfo     *VersionInfo
 }
 
 func NewConfiguration() *Configuration {
 	return &Configuration{
-		Cloud:     new(CloudConfiguration),
-		GPS:       new(GPSConfiguration),
-		Dashboard: new(DashboardConfiguration),
-		OpenCV:    new(OpenCVConfiguration),
-		AppInfo:   new(VersionInfo),
+		Cloud:       new(CloudConfiguration),
+		GPS:         new(GPSConfiguration),
+		Dashboard:   new(DashboardConfiguration),
+		OpenCV:      new(OpenCVConfiguration),
+		AppInfo:     new(VersionInfo),
+		Persistence: new(PersistenceConfiguration),
+		Debug:       new(DebugConfiguration),
 	}
 }
 
@@ -29,6 +33,8 @@ func (c *Configuration) Validate() error {
 		c.Dashboard,
 		c.OpenCV,
 		c.AppInfo,
+		c.Debug,
+		c.Persistence,
 	} {
 		if err := validatable.Validate(); err != nil {
 			return err
@@ -73,23 +79,103 @@ func (c *DashboardConfiguration) Validate() error {
 }
 
 type OpenCVConfiguration struct {
-	CameraDeviceID int
+	IsMocked bool
+	Source   CaptureConfiguration
+
 	FrameRate      int
 	DescriptorPath string
 }
 
+const (
+	fileVideoSource   = "file"
+	deviceVideoSource = "device"
+)
+
+type CaptureConfiguration struct {
+	PreferredSource string
+
+	CameraDeviceID  int
+	PrerecordedFile string
+}
+
+func (cc *CaptureConfiguration) IsFileSourced() bool {
+	return cc.PreferredSource == fileVideoSource
+}
+
+func (cc *CaptureConfiguration) IsDeviceSourced() bool {
+	return cc.PreferredSource == "" || cc.PreferredSource == deviceVideoSource
+}
+
+func (cc *CaptureConfiguration) Validate() error {
+	if err := validation.ValidateStruct(cc,
+		validation.Field(&cc.PreferredSource, validation.Required, validation.In(fileVideoSource, deviceVideoSource)),
+	); err != nil {
+		return err
+	}
+
+	if cc.IsFileSourced() {
+		return validation.ValidateStruct(cc,
+			validation.Field(&cc.PrerecordedFile, validation.Required),
+		)
+	}
+
+	// no additional validation for device based sourcing
+
+	return nil
+}
+
 func (c *OpenCVConfiguration) Validate() error {
-	return validation.ValidateStruct(c,
+	if err := validation.ValidateStruct(c,
 		validation.Field(&c.DescriptorPath, validation.Required),
 		validation.Field(&c.FrameRate, validation.Required),
-	)
+	); err != nil {
+		return err
+	}
+
+	if err := c.Source.Validate(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 type VersionInfo struct {
 	Version          string
-	UniqueIdentifier *UniqueIdentifier
+	UniqueIdentifier string
 }
 
 func (c *VersionInfo) Validate() error {
-	return c.UniqueIdentifier.Validate()
+	return validation.ValidateStruct(c,
+		validation.Field(&c.UniqueIdentifier, validation.Required),
+	)
+}
+
+type DebugConfiguration struct {
+	VideoInput      string // File/Camera
+	VideoProcessing string // HaarCascade/Mock
+	GPSInput        string // Device/Mock
+}
+
+func (c *DebugConfiguration) Validate() error {
+	return nil
+}
+
+type PersistenceConfiguration struct {
+	IsEnabled          bool
+	PersistenceDialect string
+	PersistenceURL     string
+}
+
+const (
+	mongoPersistenceDialect    = "mongo"
+	memcachePersistenceDialect = "memcache"
+)
+
+func (c *PersistenceConfiguration) Validate() error {
+	return validation.ValidateStruct(c,
+		validation.Field(&c.PersistenceDialect, validation.In(
+			mongoPersistenceDialect,
+			memcachePersistenceDialect,
+		)),
+	)
 }

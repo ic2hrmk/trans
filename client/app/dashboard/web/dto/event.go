@@ -7,7 +7,7 @@ type LatestReceivedEvents struct {
 }
 
 type VideoEvent struct {
-	PeopleOnBoard int `json:"people_on_board"`
+	PeopleOnBoard uint64 `json:"people_on_board"`
 }
 
 type GPSEvent struct {

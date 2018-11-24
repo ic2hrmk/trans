@@ -6,13 +6,13 @@ import (
 	"log"
 	"net/http"
 
-	event "github.com/ic2hrmk/goevent"
+	event "github.com/ic2hrmk/go-event"
 
 	"trans/client/app/contracts"
 )
 
 type videoMessage struct {
-	Humans int `json:"humans"`
+	Humans uint64 `json:"humans"`
 }
 
 func NewVideoMessage(e event.Event) (*videoMessage, error) {
@@ -22,7 +22,7 @@ func NewVideoMessage(e event.Event) (*videoMessage, error) {
 	}
 
 	return &videoMessage{
-		Humans: message.ObjectCounter,
+		Humans: message.ObjectsCounter,
 	}, nil
 }
 

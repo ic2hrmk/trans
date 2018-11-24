@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"trans/client/app/contracts"
 
-	event "github.com/ic2hrmk/goevent"
+	event "github.com/ic2hrmk/go-event"
 )
 
 type WebSocketDashboardServer struct {
