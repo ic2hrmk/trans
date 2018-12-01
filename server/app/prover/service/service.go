@@ -4,8 +4,9 @@ import (
 	"net/http"
 
 	"github.com/emicklei/go-restful"
+
 	"trans/server/app"
-	"trans/server/app/prover/dto"
+	"trans/server/shared/communication/representation"
 )
 
 type ProverService struct {
@@ -32,10 +33,10 @@ func (rcv *ProverService) init() {
 	ws.Route(ws.POST("/experiment").
 		To(rcv.createExperiment).
 		Operation("createExperiment").
-		Reads(dto.CreateExperimentRequest{}).
-		Writes(dto.CreateExperimentResponse{}).
-		Returns(200, http.StatusText(http.StatusOK), dto.CreateExperimentResponse{}).
-		Returns(500, http.StatusText(http.StatusInternalServerError), dto.Error{}))
+		Reads(representation.CreateExperimentRequest{}).
+		Writes(representation.CreateExperimentResponse{}).
+		Returns(200, http.StatusText(http.StatusOK), representation.CreateExperimentResponse{}).
+		Returns(500, http.StatusText(http.StatusInternalServerError), representation.ErrorResponse{}))
 
 	cors := restful.CrossOriginResourceSharing{
 		AllowedHeaders: []string{"Content-Type", "Accept",},

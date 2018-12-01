@@ -10,7 +10,7 @@ services:
     volumes:
       - gis_mongo_data:/data/db
     ports:
-      - 27037:27017
+      - 27017:27017
 
   mongo_express:
     image: mongo-express
@@ -25,8 +25,8 @@ services:
     image: golang:latest
     volumes:
     - .:${GOPATH}/src/trans/
-    working_dir: ${GOPATH}/src/trans/server
-    command: go run ./gateway/main.go -kind=auth -env=./test-pack/docker/env
+    working_dir: ${GOPATH}/src/trans/service
+    command: go run ./gateway/main.go --kind=route
     ports:
     - 8081:8080
     restart: always

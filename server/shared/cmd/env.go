@@ -1,4 +1,4 @@
-package init
+package cmd
 
 import (
 	"github.com/joho/godotenv"

@@ -4,20 +4,25 @@ import (
 	"log"
 
 	"trans/server/registry"
-	"trans/server/shared/init"
+	"trans/server/shared/cmd"
 )
+
+//go:generate go run main.go --kind=route
 
 func main() {
 	//
 	// Load startup flags
 	//
-	flags := init.LoadFlags()
+	flags := cmd.LoadFlags()
 
 	//
 	// Load env.
 	//
 	if flags.EnvFile != "" {
-		init.LoadEnvFile(flags.EnvFile)
+		err := cmd.LoadEnvFile(flags.EnvFile)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	//

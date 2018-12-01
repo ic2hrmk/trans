@@ -19,7 +19,7 @@ func resolveCLIConfigurations(config *Configuration) {
 	flag.DurationVar(&config.Cloud.ReportPeriod, "cloud-period", DefaultCloudReportPeriod, "time between cloud reports")
 	flag.DurationVar(&config.GPS.RenewPeriod, "gps-period", DefaultGPSRenewPeriod, "time between GPS receiver call")
 	flag.StringVar(&config.Dashboard.WebHostAddress, "web", DefaultWebHostAddress, "host address to serve web interface")
-	flag.StringVar(&config.Dashboard.WSHostAddress, "ws", DefaultWSHostAddress, "host address to serve web-socket server")
+	flag.StringVar(&config.Dashboard.WSHostAddress, "ws", DefaultWSHostAddress, "host address to serve web-socket service")
 	flag.StringVar(&config.OpenCV.DescriptorPath, "descriptor", FaceDescriptorFile, "OpenCV configuration file")
 	flag.IntVar(&config.OpenCV.CameraDeviceID, "cameraID", DefaultCameraID, "camera device's ID")
 	flag.IntVar(&config.OpenCV.FrameRate, "framerate", DefaultFrameRate, "OpenCV camera frame rate configuration")

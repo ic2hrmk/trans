@@ -1,4 +1,4 @@
-package dto
+package representation
 
 type CreateExperimentRequest struct {
 
