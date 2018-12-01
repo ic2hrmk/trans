@@ -3,6 +3,6 @@ package config
 // Embeds at compile time
 var Version string
 
-func GetEmbeddedVersion() string {
-	return Version
+func resolveEmbeddedConfigurations(config *Configuration) {
+	config.AppInfo.Version = Version
 }

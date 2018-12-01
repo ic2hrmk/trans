@@ -1,3 +1,8 @@
+# Dependencies
+vendor/
+
+# Binaries
 _*
+
+# Configurations
 .env
-vendor

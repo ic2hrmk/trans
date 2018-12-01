@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 
-	event "github.com/ic2hrmk/goevent"
+	event "github.com/ic2hrmk/go-event"
 
 	"github.com/hybridgroup/mjpeg"
 	"trans/client/app/contracts"
