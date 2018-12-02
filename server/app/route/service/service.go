@@ -1,10 +1,10 @@
 package service
 
 import (
+	"github.com/emicklei/go-restful"
 	"net/http"
 	"trans/server/app/route/persistence/repository"
-
-	"github.com/emicklei/go-restful"
+	"trans/server/shared/gateway/filters"
 
 	"trans/server/app"
 	"trans/server/shared/communication/representation"
@@ -31,27 +31,25 @@ func NewRouteService(
 func (rcv *RouteService) init() {
 	ws := &restful.WebService{}
 
-	ws.Path("/api/route").
+	ws.Path("/api").
 		Consumes(restful.MIME_JSON).
 		Produces(restful.MIME_JSON)
 
-	ws.Route(ws.GET("/{routeID}").
-		To(rcv.getRouteByID).
-		Operation("getRouteByID").
-		Param(restful.PathParameter("routeID", "Route identifier")).
-		Writes(representation.GetRouteResponse{}).
-		Returns(200, http.StatusText(http.StatusOK), representation.CreateExperimentResponse{}).
-		Returns(500, http.StatusText(http.StatusInternalServerError), representation.ErrorResponse{}))
+	ws.Route(ws.GET("/version").
+		To(rcv.getVersion))
 
-	cors := restful.CrossOriginResourceSharing{
-		AllowedHeaders: []string{"Content-Type", "Accept"},
-		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
-		CookiesAllowed: false,
-		Container:      rcv.webContainer,
-	}
+	ws.Route(
+		ws.GET("/route/{routeID}").
+			To(rcv.getRouteByID).
+			Operation("getRouteByID").
+			Param(restful.PathParameter("routeID", "Route identifier")).
+			Writes(representation.GetRouteResponse{}).
+			Returns(200, http.StatusText(http.StatusOK), representation.GetRouteResponse{}).
+			Returns(500, http.StatusText(http.StatusInternalServerError), representation.ErrorResponse{}))
 
-	rcv.webContainer.Filter(cors.Filter)
-	rcv.webContainer.Filter(rcv.webContainer.OPTIONSFilter)
+	ws.Filter(filters.LogRequest)
+
+	rcv.webContainer.Add(ws)
 }
 
 func (rcv *RouteService) Serve(address string) error {

@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/emicklei/go-restful"
+	"log"
 	"net/http"
 	"trans/server/app/route/persistence/repository"
 	"trans/server/shared/communication/representation"
@@ -11,7 +12,7 @@ func (rcv *RouteService) getRouteByID(
 	request *restful.Request,
 	response *restful.Response,
 ) {
-	routeID := request.PathParameter("routeId")
+	routeID := request.PathParameter("routeID")
 
 	if routeID == "" {
 		response.WriteHeader(http.StatusBadRequest)
@@ -54,5 +55,7 @@ func (rcv *RouteService) getRouteByID(
 		}
 	}
 
-	response.WriteHeaderAndEntity(http.StatusOK, out)
+	if err := response.WriteHeaderAndEntity(http.StatusOK, out); err != nil {
+		log.Println(err)
+	}
 }

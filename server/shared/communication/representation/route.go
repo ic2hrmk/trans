@@ -9,7 +9,7 @@ type GetRouteRequest struct {
 type GetRouteResponse struct {
 	RouteID    string             `json:"routeId"`
 	Name       string             `json:"name"`
-	Length     string             `json:"length"`
+	Length     float32            `json:"length"`
 	StartPoint RoutePoint         `json:"startPoint"`
 	EndPoint   RoutePoint         `json:"endPoint"`
 	Schedule   []*ScheduleSection `json:"schedule"`
@@ -20,12 +20,12 @@ type GetRouteResponse struct {
 //
 
 type RoutePoint struct {
-	Latitude  float32
-	Longitude float32
+	Latitude  float32 `json:"latitude"`
+	Longitude float32 `json:"longitude"`
 }
 
 type ScheduleSection struct {
-	From     time.Time
-	To       time.Time
-	Duration time.Duration
+	From     time.Duration `json:"from"`
+	To       time.Duration `json:"to"`
+	Duration time.Duration `json:"duration"`
 }

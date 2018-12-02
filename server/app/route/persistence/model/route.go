@@ -5,7 +5,7 @@ import "time"
 type Route struct {
 	RouteID    string             `bson:"_id"`
 	Name       string             `bson:"name"`
-	Length     string             `bson:"length"`
+	Length     float32            `bson:"length"`
 	StartPoint RoutePoint         `bson:"startPoint"`
 	EndPoint   RoutePoint         `bson:"endPoint"`
 	Schedule   []*ScheduleSection `bson:"schedule"`
@@ -17,7 +17,7 @@ type RoutePoint struct {
 }
 
 type ScheduleSection struct {
-	From     time.Time     `bson:"from"`
-	To       time.Time     `bson:"to"`
+	From     time.Duration `bson:"from"`
+	To       time.Duration `bson:"to"`
 	Duration time.Duration `bson:"period"`
 }

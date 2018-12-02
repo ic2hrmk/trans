@@ -27,6 +27,14 @@
   revision = "eeefdecb41b842af6dc652aaea4026e8403e62df"
 
 [[projects]]
+  digest = "1:a25a2c5ae694b01713fb6cd03c3b1ac1ccc1902b9f0a922680a88ec254f968e1"
+  name = "github.com/google/uuid"
+  packages = ["."]
+  pruneopts = ""
+  revision = "9b3b1e0f5f99ae461456d768e7d301a7acdaa2d8"
+  version = "v1.1.0"
+
+[[projects]]
   digest = "1:7df5a9695a743c3e1626b28bb8741602c8c15527e1efaeaec48ab2ff9a23f74c"
   name = "github.com/joho/godotenv"
   packages = ["."]
@@ -65,6 +73,7 @@
     "github.com/emicklei/go-restful",
     "github.com/globalsign/mgo",
     "github.com/globalsign/mgo/bson",
+    "github.com/google/uuid",
     "github.com/joho/godotenv",
   ]
   solver-name = "gps-cdcl"

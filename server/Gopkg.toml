@@ -9,3 +9,7 @@
 [[constraint]]
   name = "github.com/globalsign/mgo"
   branch = "master"
+
+[[constraint]]
+  name = "github.com/google/uuid"
+  version = "1.0.0"

@@ -44,5 +44,6 @@ func main() {
 	//
 	// Run till the death comes
 	//
+	log.Printf("[%s] started serving on '%s'", flags.Kind, flags.Address)
 	log.Fatal(service.Serve(flags.Address))
 }

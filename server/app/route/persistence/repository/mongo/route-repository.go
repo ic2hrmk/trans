@@ -11,7 +11,7 @@ type RouteRepository struct {
 	db *mgo.Database
 }
 
-const routeCollectionName = "routeCollection"
+const routeCollectionName = "routes"
 
 func NewRouteRepository(db *mgo.Database) repository.RouteRepository {
 	return &RouteRepository{db: db}
@@ -19,6 +19,10 @@ func NewRouteRepository(db *mgo.Database) repository.RouteRepository {
 
 func (rcv *RouteRepository) collection() *mgo.Collection {
 	return rcv.db.C(routeCollectionName)
+}
+
+func (rcv *RouteRepository) CreateRoute(route *model.Route) error {
+	return rcv.collection().Insert(route)
 }
 
 func (rcv *RouteRepository) GetRouteByID(routeID string) (*model.Route, error) {
