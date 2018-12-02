@@ -1,0 +1,66 @@
+version: '3.1'
+
+volumes:
+  server_mongo_data:
+    external: true
+
+services:
+  #
+  # Back services
+  #
+  route:
+    image: golang:latest
+    env_file:
+      - docker-compose.env
+    volumes:
+      - .:/go/src/trans/server/
+    working_dir: /go/src/trans/server/
+    command: go run ./entry/main.go --kind=route
+    restart: always
+    depends_on:
+      - mongo
+
+  vehicle:
+    image: golang:latest
+    env_file:
+      - docker-compose.env
+    volumes:
+      - .:/go/src/trans/server/
+    working_dir: /go/src/trans/server/
+    command: go run ./entry/main.go --kind=vehicle
+    restart: always
+    depends_on:
+    - mongo
+  #
+  # 3-rd parties
+  #
+  mongo:
+    image: mongo
+    logging:
+      driver: none
+    volumes:
+      - server_mongo_data:/data/db
+
+  mongo_express:
+    image: mongo-express
+    ports:
+      - 7017:8081
+    links:
+      - mongo
+    logging:
+      driver: none
+    depends_on:
+      - mongo
+
+  nginx:
+    image: "nginx:latest"
+    ports:
+    - "9000:80"
+    volumes:
+    - ./docker-compose.nginx.conf:/etc/nginx/conf.d/default.conf
+    restart: always
+    logging:
+      driver: none
+    depends_on:
+    - route
+    - vehicle

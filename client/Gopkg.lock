@@ -56,6 +56,14 @@
   revision = "96e28a7048b2dd816071acc0469225f1e691c783"
 
 [[projects]]
+  digest = "1:ecd9aa82687cf31d1585d4ac61d0ba180e42e8a6182b85bd785fcca8dfeefc1b"
+  name = "github.com/joho/godotenv"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "23d116af351c84513e1946b527c88823e476be13"
+  version = "v1.3.0"
+
+[[projects]]
   digest = "1:0bcc7d1f5d0a70731ebdaab07abc367e06f057741a759b2297b800b5f603ced3"
   name = "gocv.io/x/gocv"
   packages = ["."]
@@ -74,6 +82,7 @@
     "github.com/gorilla/websocket",
     "github.com/hybridgroup/mjpeg",
     "github.com/ic2hrmk/go-event",
+    "github.com/joho/godotenv",
     "gocv.io/x/gocv",
   ]
   solver-name = "gps-cdcl"

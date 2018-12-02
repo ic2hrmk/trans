@@ -3,6 +3,7 @@ vendor/
 
 # Binaries
 _*
+tclient
 
 # Configurations
 .env

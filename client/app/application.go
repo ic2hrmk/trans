@@ -5,11 +5,16 @@ import (
 	"log"
 	"os"
 	"sync"
+	"trans/client/app/cloud/configurator"
+	"trans/client/app/cloud/configurator/http"
+	"trans/client/app/dashboard/web"
+	"trans/client/app/dashboard/ws"
+	"trans/client/app/drivers/vehicle-info-storage/substituted"
 	"trans/client/app/persistence/history/service/archive"
 
 	event "github.com/ic2hrmk/go-event"
+	mockCloudConfigurator "trans/client/app/cloud/configurator/mock"
 	mockCloudReporter "trans/client/app/cloud/reporter/mock"
-	mockBoardComputer "trans/client/app/drivers/board-computer/mock"
 	mockGPSReceiver "trans/client/app/drivers/gps-module/mock"
 	mockVideoClassifier "trans/client/app/drivers/video-classifier/opencv/mock"
 
@@ -17,10 +22,8 @@ import (
 	"trans/client/app/config"
 	"trans/client/app/contracts"
 	"trans/client/app/dashboard"
-	"trans/client/app/dashboard/web"
-	"trans/client/app/dashboard/ws"
-	"trans/client/app/drivers/board-computer"
 	"trans/client/app/drivers/gps-module"
+	"trans/client/app/drivers/vehicle-info-storage"
 	"trans/client/app/drivers/video-classifier"
 	"trans/client/app/drivers/video-classifier/opencv/haar/capturer"
 	"trans/client/app/drivers/video-classifier/opencv/haar/capturer/tape"
@@ -55,7 +58,7 @@ type Application struct {
 	//
 	// Drivers
 	//
-	boardComputer     board_computer.BoardComputer
+	vehicleInfo       vehicle_info_storage.VehicleInfoStorage
 	geoPositionModule gps_module.GPSPositionModule
 	videoClassifier   video_classifier.Classifier
 
@@ -149,12 +152,6 @@ func (app *Application) configure(configuration *config.Configuration) error {
 	var err error
 
 	//
-	// Dashboard init.
-	//
-	app.webDashboard = web.NewWebDashboard(configuration.Dashboard.WebHostAddress)
-	app.webSocketDashboard = ws.NewWebSocketDashboardServer(configuration.Dashboard.WSHostAddress)
-
-	//
 	// Video classifier init.
 	//
 	if configuration.OpenCV.IsMocked {
@@ -189,21 +186,56 @@ func (app *Application) configure(configuration *config.Configuration) error {
 	}
 
 	//
-	// Board computer init.
+	// Cloud configurations
 	//
-	app.boardComputer = mockBoardComputer.NewMockedBoardComputer()
+	var cloudConfigurator cloud_configurator.Configurator
+	var remoteConfigurations *cloud_configurator.RemoteConfigurations
+
+	if configuration.Cloud.IsEnabled {
+		cloudConfigurator = remote_configurator.NewCloudConfigurator(
+			configuration.Cloud.Host, configuration.AppInfo.UniqueIdentifier)
+	} else {
+		cloudConfigurator = mockCloudConfigurator.NewMockedCloudConfigurator()
+	}
+
+	remoteConfigurations, err = cloudConfigurator.GetRemoteConfigurations()
+	if err != nil {
+		return err
+	}
 
 	//
-	// GPS Module init.
+	// Vehicle info storage
 	//
-	app.geoPositionModule = mockGPSReceiver.NewMockedGPSReceiver(
-		mockGPSReceiver.TestDuration, mockGPSReceiver.KievLatitude, mockGPSReceiver.KievLongitude)
+	app.vehicleInfo = substituted.NewSubstitutedVehicleInfoStorage(
+		remoteConfigurations.Vehicle.Name,
+		remoteConfigurations.Vehicle.Type,
+		remoteConfigurations.Vehicle.RegistrationPlate,
+		remoteConfigurations.Vehicle.SeatCapacity,
+		remoteConfigurations.Vehicle.MaxCapacity,
+		remoteConfigurations.Vehicle.VIN,
+	)
+
+	//
+	// Dashboard init.
+	//
+	app.webDashboard = web.NewWebDashboard(
+		configuration.Dashboard.WebHostAddress,
+		configuration.Dashboard.MapAPIKey,
+		app.vehicleInfo,
+	)
+	app.webSocketDashboard = ws.NewWebSocketDashboardServer(configuration.Dashboard.WSHostAddress)
 
 	//
 	// Cloud reporter init.
 	//
 	app.cloudReporter = mockCloudReporter.NewMockedCloudReporter(
 		configuration.Cloud.Host, configuration.Cloud.ReportPeriod)
+
+	//
+	// GPS Module init.
+	//
+	app.geoPositionModule = mockGPSReceiver.NewMockedGPSReceiver(
+		mockGPSReceiver.TestDuration, mockGPSReceiver.KievLatitude, mockGPSReceiver.KievLongitude)
 
 	//
 	// Persistence init.

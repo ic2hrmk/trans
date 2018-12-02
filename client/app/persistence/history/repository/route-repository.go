@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	ErrRouteNotFound = errors.New("ErrRouteNotFound")
+	ErrRouteNotFound = errors.New("ErrRouteNotFoundMessage")
 )
 
 type RouteRepository interface {
