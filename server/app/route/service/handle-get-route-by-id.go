@@ -48,8 +48,8 @@ func (rcv *RouteService) getRouteByID(
 	}
 	for i, period := range route.Schedule {
 		out.Schedule[i] = &representation.ScheduleSection{
-			From: period.From,
-			To: period.To,
+			From:     period.From,
+			To:       period.To,
 			Duration: period.Duration,
 		}
 	}

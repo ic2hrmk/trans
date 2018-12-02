@@ -39,7 +39,7 @@ func (rcv *ProverService) init() {
 		Returns(500, http.StatusText(http.StatusInternalServerError), representation.ErrorResponse{}))
 
 	cors := restful.CrossOriginResourceSharing{
-		AllowedHeaders: []string{"Content-Type", "Accept",},
+		AllowedHeaders: []string{"Content-Type", "Accept"},
 		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
 		CookiesAllowed: false,
 		Container:      rcv.WebContainer,
