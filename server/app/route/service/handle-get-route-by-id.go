@@ -4,6 +4,7 @@ import (
 	"github.com/emicklei/go-restful"
 	"log"
 	"net/http"
+	"trans/server/app/route/errors"
 	"trans/server/app/route/persistence/repository"
 	"trans/server/shared/communication/representation"
 )
@@ -12,21 +13,29 @@ func (rcv *RouteService) getRouteByID(
 	request *restful.Request,
 	response *restful.Response,
 ) {
-	routeID := request.PathParameter("routeID")
+	routeID := request.QueryParameter("routeId")
 
 	if routeID == "" {
-		response.WriteHeader(http.StatusBadRequest)
+		response.WriteHeaderAndEntity(http.StatusBadRequest, representation.ErrorResponse{
+			Message: errors.ErrEmptyRouteIDMessage,
+		})
 		return
 	}
 
 	route, err := rcv.routeRepository.GetRouteByID(routeID)
 	if err != nil {
 		if err == repository.ErrRouteNotFound {
-			response.WriteHeader(http.StatusNotFound)
+			response.WriteHeaderAndEntity(http.StatusNotFound, representation.ErrorResponse{
+				Message: errors.ErrRouteNotFoundMessage,
+			})
 			return
 		}
 
-		response.WriteHeader(http.StatusInternalServerError)
+		response.WriteHeaderAndEntity(http.StatusInternalServerError, representation.ErrorResponse{
+			Message: errors.ErrInternalMessage,
+		})
+		log.Println(err)
+
 		return
 	}
 

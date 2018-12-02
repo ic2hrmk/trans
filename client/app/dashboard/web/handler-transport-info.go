@@ -7,13 +7,17 @@ import (
 )
 
 func (wds *WebDashboardServer) transportInfoHandler(w http.ResponseWriter, r *http.Request) {
+	//
+	// Request info from board computer
+	//
+	vehicleInfo := wds.computer.GetVehicleInfo()
+
 	fakeTransportInfo := dto.TransportInfo{
-		Name:                     "LAZ E183D1",
-		Type:                     "Trolleybus",
-		BoardNumber:              "3368",
-		VehicleRegistrationPlate: "3368",
-		SeatCapacity:             30,
-		MaxCapacity:              100,
+		Name:              vehicleInfo.Name,
+		Type:              vehicleInfo.Type,
+		RegistrationPlate: vehicleInfo.RegistrationPlate,
+		SeatCapacity:      vehicleInfo.SeatCapacity,
+		MaxCapacity:       vehicleInfo.MaxCapacity,
 	}
 
 	writeResponse(fakeTransportInfo, http.StatusOK, w)

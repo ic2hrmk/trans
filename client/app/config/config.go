@@ -12,7 +12,7 @@ type Configuration struct {
 	Dashboard   *DashboardConfiguration
 	Debug       *DebugConfiguration
 	Persistence *PersistenceConfiguration
-	AppInfo     *VersionInfo
+	AppInfo     *AppInfo
 }
 
 func NewConfiguration() *Configuration {
@@ -21,7 +21,7 @@ func NewConfiguration() *Configuration {
 		GPS:         new(GPSConfiguration),
 		Dashboard:   new(DashboardConfiguration),
 		OpenCV:      new(OpenCVConfiguration),
-		AppInfo:     new(VersionInfo),
+		AppInfo:     new(AppInfo),
 		Persistence: new(PersistenceConfiguration),
 		Debug:       new(DebugConfiguration),
 	}
@@ -47,7 +47,13 @@ func (c *Configuration) Validate() error {
 type CloudConfiguration struct {
 	Host         string
 	ReportPeriod time.Duration
+	IsEnabled    bool
 }
+
+const (
+	cloudModeReal = "real"
+	cloudModeMock = "mock"
+)
 
 func (c *CloudConfiguration) Validate() error {
 	return validation.ValidateStruct(c,
@@ -69,6 +75,7 @@ func (c *GPSConfiguration) Validate() error {
 type DashboardConfiguration struct {
 	WebHostAddress string
 	WSHostAddress  string
+	MapAPIKey      string
 }
 
 func (c *DashboardConfiguration) Validate() error {
@@ -139,12 +146,17 @@ func (c *OpenCVConfiguration) Validate() error {
 	return nil
 }
 
-type VersionInfo struct {
+type AppInfo struct {
 	Version          string
 	UniqueIdentifier string
+	EnvFile          string
 }
 
-func (c *VersionInfo) Validate() error {
+func (c *AppInfo) IsEnvProvided() bool {
+	return c.EnvFile != ""
+}
+
+func (c *AppInfo) Validate() error {
 	return validation.ValidateStruct(c,
 		validation.Field(&c.UniqueIdentifier, validation.Required),
 	)

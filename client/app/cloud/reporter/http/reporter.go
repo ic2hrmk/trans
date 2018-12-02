@@ -23,9 +23,8 @@ func NewHTTPReporter(
 
 func (r httpReporter) Run() {
 	log.Println("HTTP Cloud Reporter: has began")
-	panic("implement me")
+	log.Printf(" - Report period  :%s", r.reportPeriod.String())
 }
 
 func (r httpReporter) Listen(event event.Event) {
-	panic("implement me")
 }

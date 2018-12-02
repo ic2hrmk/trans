@@ -35,14 +35,11 @@ func (rcv *RouteService) init() {
 		Consumes(restful.MIME_JSON).
 		Produces(restful.MIME_JSON)
 
-	ws.Route(ws.GET("/version").
-		To(rcv.getVersion))
-
 	ws.Route(
-		ws.GET("/route/{routeID}").
+		ws.GET("/routes").
 			To(rcv.getRouteByID).
 			Operation("getRouteByID").
-			Param(restful.PathParameter("routeID", "Route identifier")).
+			Param(restful.QueryParameter("routeId", "Route identifier")).
 			Writes(representation.GetRouteResponse{}).
 			Returns(200, http.StatusText(http.StatusOK), representation.GetRouteResponse{}).
 			Returns(500, http.StatusText(http.StatusInternalServerError), representation.ErrorResponse{}))

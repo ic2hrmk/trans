@@ -26,7 +26,7 @@ func NewProverService() app.MicroService {
 func (rcv *ProverService) init() {
 	ws := &restful.WebService{}
 
-	ws.Path("/").
+	ws.Path("/api").
 		Consumes(restful.MIME_JSON).
 		Produces(restful.MIME_JSON)
 
@@ -38,15 +38,9 @@ func (rcv *ProverService) init() {
 		Returns(200, http.StatusText(http.StatusOK), representation.CreateExperimentResponse{}).
 		Returns(500, http.StatusText(http.StatusInternalServerError), representation.ErrorResponse{}))
 
-	cors := restful.CrossOriginResourceSharing{
-		AllowedHeaders: []string{"Content-Type", "Accept"},
-		AllowedMethods: []string{"GET", "POST", "OPTIONS"},
-		CookiesAllowed: false,
-		Container:      rcv.WebContainer,
-	}
-
-	rcv.WebContainer.Filter(cors.Filter)
 	rcv.WebContainer.Filter(rcv.WebContainer.OPTIONSFilter)
+
+	rcv.WebContainer.Add(ws)
 }
 
 func (rcv *ProverService) Serve(address string) error {

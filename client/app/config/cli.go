@@ -10,9 +10,10 @@ func resolveCLIConfigurations(config *Configuration) {
 	flag.StringVar(&config.Dashboard.WSHostAddress, "ws", DefaultWSHostAddress, "host address to serve web-socket server")
 	flag.StringVar(&config.OpenCV.DescriptorPath, "descriptor", FaceDescriptorFile, "OpenCV configuration file")
 	flag.StringVar(&config.OpenCV.Source.PreferredSource, "preferred-video-source", DefaultVideoSource, "preferred video source")
-	flag.IntVar(&config.OpenCV.Source.CameraDeviceID, "cameraID", DefaultCameraID, "camera device's ID")
-	flag.StringVar(&config.OpenCV.Source.PrerecordedFile, "prerecordedFile", "", "prerecorded source video file")
+	flag.IntVar(&config.OpenCV.Source.CameraDeviceID, "camera-id", DefaultCameraID, "camera device's ID")
+	flag.StringVar(&config.OpenCV.Source.PrerecordedFile, "prerecorded-file", "", "prerecorded source video file")
 	flag.IntVar(&config.OpenCV.FrameRate, "framerate", DefaultFrameRate, "OpenCV camera frame rate configuration")
+	flag.StringVar(&config.AppInfo.EnvFile, "env", "", "Environment values")
 
 	flag.Parse()
 }

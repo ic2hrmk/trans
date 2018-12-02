@@ -2,7 +2,7 @@ package web
 
 const (
 	//	Front-end
-	dashboardTemplate = "dashboard.html"
+	dashboardPage = "/dashboard"
 )
 
 const (

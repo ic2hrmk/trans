@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"reflect"
+	"trans/client/app/drivers/vehicle-info-storage"
 
 	event "github.com/ic2hrmk/go-event"
 
@@ -14,10 +15,18 @@ import (
 
 type WebDashboardServer struct {
 	hostAddress string
+
+	keyStorage keyStorage
+	computer   vehicle_info_storage.VehicleInfoStorage
+
 	streamMap   map[reflect.Type]string
 	videoStream *mjpeg.Stream
 	httpServer  *http.ServeMux
 	cache       *Cache
+}
+
+type keyStorage struct {
+	mapAPIKey string
 }
 
 type Cache struct {
@@ -38,9 +47,15 @@ func NewCache() *Cache {
 
 func NewWebDashboard(
 	hostAddress string,
+	mapAPIKey string,
+	infoStorage vehicle_info_storage.VehicleInfoStorage,
 ) *WebDashboardServer {
 	return &WebDashboardServer{
 		hostAddress: hostAddress,
+		keyStorage: keyStorage{
+			mapAPIKey: mapAPIKey,
+		},
+		computer:    infoStorage,
 		videoStream: mjpeg.NewStream(),
 		cache:       NewCache(),
 	}
@@ -60,7 +75,7 @@ func NewWebDashboardWithExternalVideoStream(
 func (wds *WebDashboardServer) Run() error {
 	log.Println("WEB Dashboard: available at ", wds.hostAddress)
 
-	log.Printf(" - Dashboard page: %17s\n", dashboardTemplate)
+	log.Printf(" - Dashboard page: %17s\n", dashboardPage)
 	log.Printf(" - Video stream: %20s\n", apiVideoStream)
 	log.Printf(" - Latest events: %19s\n", apiLatestEvents)
 	log.Printf(" - Current vehicle info: %15s\n", apiTransportInfo)
@@ -69,6 +84,7 @@ func (wds *WebDashboardServer) Run() error {
 	wds.httpServer = http.NewServeMux()
 
 	wds.httpServer.Handle("/", http.FileServer(http.Dir("./www")))
+	wds.httpServer.HandleFunc(dashboardPage, wds.serveDashboardPage)
 	wds.httpServer.HandleFunc(apiTransportInfo, wds.transportInfoHandler)
 	wds.httpServer.HandleFunc(apiLatestEvents, wds.latestEventsHandler)
 	wds.httpServer.HandleFunc(apiVideoStream, wds.videoStreamHandler)

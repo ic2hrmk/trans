@@ -4,7 +4,6 @@ import "time"
 
 //	Host addresses
 const (
-	DefaultCloudAddress   = ":5050"
 	DefaultWebHostAddress = ":8080"
 	DefaultWSHostAddress  = ":8081"
 )
@@ -18,7 +17,7 @@ const (
 
 // Cloud
 const (
-	DefaultCloudHostAddress  = "http://mocked.reporter.cloud"
+	DefaultCloudHostAddress  = "http://localhost:9000"
 	DefaultCloudReportPeriod = 5 * time.Second
 )
 

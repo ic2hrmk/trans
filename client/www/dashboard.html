@@ -7,7 +7,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>TClient Dashboad</title>
+    <title>Dashboad</title>
 
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/metisMenu.min.css" rel="stylesheet">
@@ -23,7 +23,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="navbar-header">
-            <a class="navbar-brand" href="#">TClient Dashboard <span
+            <a class="navbar-brand" href="#">Панель керування <span
                     id="vehicle-name"></span></a>
         </div>
 
@@ -31,43 +31,47 @@
         <ul class="nav navbar-right navbar-top-links">
             <li class="dropdown">
                 <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                    Version <span id="version-placeholder"></span>
+                    Версія <span id="version-placeholder"></span>
                 </a>
         </ul>
 
         <!-- Sidebar -->
         <div class="navbar-default sidebar" role="navigation">
-            <div class="sidebar-nav navbar-collapse" style="margin-bottom: 50px">
+            <div class="sidebar-nav navbar-collapse"
+                 style="margin-bottom: 50px">
                 <div class="card" style="padding:7px">
                     <div class="card-body">
                         <h3 class="card-title">
                             <span id="vehicle-name"></span>
                         </h3>
                         <p class="card-text">
-                            <b>Vehicle type:</b> <span
+                            <b>Тип транспортного засобу: </b> <span
                                 id="vehicle-type"></span></br>
-                            <b>Vehicle registration plate:</b> <span
+                            <b>Номерний знак:</b> <span
                                 id="vehicle-registration-plate"></span>
                         </p>
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">Seat capacity: <span
-                                id="vehicle-seat-capacity"></span></li>
-                        <li class="list-group-item">Max. capacity: <span
-                                id="vehicle-max-capacity"></span></li>
+                        <li class="list-group-item">Кількість місць для сидіння:
+                            <span
+                                    id="vehicle-seat-capacity"></span></li>
+                        <li class="list-group-item">Загальна кількість місць:
+                            <span
+                                    id="vehicle-max-capacity"></span></li>
                     </ul>
                     <div class="panel panel-default">
                         <div class="panel-heading">
                             <h4><i class="fa fa-circle text-danger Blink"></i>
-                                Updates</h4>
+                                Оновлення</h4>
                         </div>
                         <div class="panel-body">
                             <div>
-                                <p>Current load: <span id="people-number-ws">Waiting..</span>
+                                <p>Поточна кількість людей: <span
+                                        id="people-number-ws">Waiting..</span>
                                 </p>
-                                <p>Latitude: <span
+                                <p>Широта: <span
                                         id="latitude-ws">Waiting..</span></p>
-                                <p>Longitude: <span
+                                <p>Довгота: <span
                                         id="longitude-ws">Waiting..</span></p>
                             </div>
                         </div>
@@ -78,12 +82,12 @@
     </nav>
 
     <!-- Page Content -->
-    <div id="map-wrapper" >
-       <div id="map"></div>
+    <div id="map-wrapper">
+        <div id="map"></div>
     </div>
 
     <div id="video-wrapper">
-         <img src='api/stream' width="100%" height="100%">
+        <img src='api/stream' width="100%" height="100%">
     </div>
 </div>
 
@@ -101,7 +105,7 @@
         $.get("api/transport", function (transportResponse, status) {
             $("#vehicle-name").text(transportResponse.name);
             $("#vehicle-type").text(transportResponse.type);
-            $("#vehicle-registration-plate").text(transportResponse.vehicle_registration_plate);
+            $("#vehicle-registration-plate").text(transportResponse.registration_plate);
             $("#vehicle-seat-capacity").text(transportResponse.seat_capacity);
             $("#vehicle-max-capacity").text(transportResponse.max_capacity);
         });
@@ -154,7 +158,7 @@
 </script>
 
 <script async defer
-        src="https://maps.googleapis.com/maps/api/js?callback=initMap&key=INSERT_HERE">
+        src="https://maps.googleapis.com/maps/api/js?callback=initMap&key={{.MapAPIKey}}">
 </script>
 
 

@@ -9,11 +9,16 @@ const (
 	transClientUniqueIdentifierEnvVar   = "TRANS_CLIENT_UNIQUE_IDENTIFIER"
 	transClientPersistenceDialectEnvVar = "TRANS_CLIENT_PERSISTENCE_DIALECT"
 	transClientPersistenceDbURLEnvVar   = "TRANS_CLIENT_PERSISTENCE_DB_URL"
+	transClientCloudMode                = "TRANS_CLIENT_CLOUD_MODE"
+	transClientMapAPIKey                = "TRANS_CLIENT_MAP_API_KEY"
 )
 
 func resolveEnvironmentConfigurations(config *Configuration) {
 	config.AppInfo.UniqueIdentifier = os.Getenv(transClientUniqueIdentifierEnvVar)
 
+	//
+	// Persistence
+	//
 	config.Persistence.PersistenceDialect = os.Getenv(transClientPersistenceDialectEnvVar)
 	config.Persistence.PersistenceURL = os.Getenv(transClientPersistenceDbURLEnvVar)
 
@@ -24,4 +29,19 @@ func resolveEnvironmentConfigurations(config *Configuration) {
 
 		config.Persistence.IsEnabled = false
 	}
+
+	//
+	// Cloud
+	//
+	if cloudMode := os.Getenv(transClientCloudMode); cloudMode == cloudModeMock {
+		log.Println("[env-resolver] cloud reports goes to RAM")
+		config.Cloud.IsEnabled = false
+	} else {
+		config.Cloud.IsEnabled = true
+	}
+
+	//
+	// Dashboard
+	//
+	config.Dashboard.MapAPIKey = os.Getenv(transClientMapAPIKey)
 }
