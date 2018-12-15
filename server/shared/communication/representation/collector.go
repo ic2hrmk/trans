@@ -19,7 +19,6 @@ func (r *CreateReportRequest) Validate() error {
 		validation.Field(&r.RunID, validation.Required),
 		validation.Field(&r.Latitude, validation.Required),
 		validation.Field(&r.Longitude, validation.Required),
-		validation.Field(&r.ObjectsCaptured, validation.Required),
 	)
 }
 

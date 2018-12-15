@@ -46,6 +46,10 @@ func (rcv *ArchiveService) StartRun(routeID string) error {
 	return rcv.routeService.StartRun(routeID)
 }
 
+func (rcv *ArchiveService) GetCurrentRunID() (string, error) {
+	return rcv.routeService.GetCurrentRunID()
+}
+
 func (rcv *ArchiveService) StopCurrentRun() error {
 	return rcv.routeService.StopCurrentRun()
 }

@@ -1,4 +1,4 @@
-package report_http_client
+package collector_http_client
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ type reportClient struct {
 	address string
 }
 
-func NewReportServiceClient(address string) *reportClient {
+func NewCollectorServiceClient(address string) *reportClient {
 	return &reportClient{address: address}
 }
 

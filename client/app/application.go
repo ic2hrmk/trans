@@ -5,38 +5,39 @@ import (
 	"log"
 	"os"
 	"sync"
-	"trans/client/app/cloud/configurator"
-	"trans/client/app/cloud/configurator/http"
-	"trans/client/app/dashboard/web"
-	"trans/client/app/dashboard/ws"
-	"trans/client/app/drivers/vehicle-info-storage/substituted"
-	"trans/client/app/persistence/history/service/archive"
 
 	event "github.com/ic2hrmk/go-event"
 	mockCloudConfigurator "trans/client/app/cloud/configurator/mock"
-	mockCloudReporter "trans/client/app/cloud/reporter/mock"
+	httpCloudReporter "trans/client/app/cloud/reporter/http"
 	mockGPSReceiver "trans/client/app/drivers/gps-module/mock"
 	mockVideoClassifier "trans/client/app/drivers/video-classifier/opencv/mock"
 
+	"trans/client/app/cloud/configurator"
+	"trans/client/app/cloud/configurator/http"
 	"trans/client/app/cloud/reporter"
 	"trans/client/app/config"
 	"trans/client/app/contracts"
 	"trans/client/app/dashboard"
+	"trans/client/app/dashboard/web"
+	"trans/client/app/dashboard/ws"
 	"trans/client/app/drivers/gps-module"
 	"trans/client/app/drivers/vehicle-info-storage"
+	"trans/client/app/drivers/vehicle-info-storage/substituted"
 	"trans/client/app/drivers/video-classifier"
 	"trans/client/app/drivers/video-classifier/opencv/haar/capturer"
 	"trans/client/app/drivers/video-classifier/opencv/haar/capturer/tape"
 	"trans/client/app/drivers/video-classifier/opencv/haar/capturer/web-camera"
 	"trans/client/app/drivers/video-classifier/opencv/haar/cascade"
 	"trans/client/app/persistence/history"
+	"trans/client/app/persistence/history/service/archive"
 )
 
 type Application struct {
 	//
 	// Configurations
 	//
-	config *config.Configuration
+	config      *config.Configuration
+	cloudConfig *cloud_configurator.RemoteConfigurations
 
 	//
 	// Event streams
@@ -139,6 +140,13 @@ func (app *Application) init() error {
 	app.geoPositionModule.Subscribe(app.gpsStream)
 	app.videoClassifier.Subscribe(app.videoStream)
 
+	//
+	// Archive
+	//
+	if err = app.archive.StartRun(app.cloudConfig.Route.RouteID); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -186,10 +194,16 @@ func (app *Application) configure(configuration *config.Configuration) error {
 	}
 
 	//
+	// GPS Module init.
+	//
+	app.geoPositionModule = mockGPSReceiver.NewMockedGPSReceiver(
+		mockGPSReceiver.TestDuration, mockGPSReceiver.KievLatitude, mockGPSReceiver.KievLongitude)
+
+	//
 	// Cloud configurations
 	//
 	var cloudConfigurator cloud_configurator.Configurator
-	var remoteConfigurations *cloud_configurator.RemoteConfigurations
+	var remoteConfiguration *cloud_configurator.RemoteConfigurations
 
 	if configuration.Cloud.IsEnabled {
 		cloudConfigurator = remote_configurator.NewCloudConfigurator(
@@ -198,7 +212,7 @@ func (app *Application) configure(configuration *config.Configuration) error {
 		cloudConfigurator = mockCloudConfigurator.NewMockedCloudConfigurator()
 	}
 
-	remoteConfigurations, err = cloudConfigurator.GetRemoteConfigurations()
+	remoteConfiguration, err = cloudConfigurator.GetRemoteConfigurations()
 	if err != nil {
 		return err
 	}
@@ -207,12 +221,13 @@ func (app *Application) configure(configuration *config.Configuration) error {
 	// Vehicle info storage
 	//
 	app.vehicleInfo = substituted.NewSubstitutedVehicleInfoStorage(
-		remoteConfigurations.Vehicle.Name,
-		remoteConfigurations.Vehicle.Type,
-		remoteConfigurations.Vehicle.RegistrationPlate,
-		remoteConfigurations.Vehicle.SeatCapacity,
-		remoteConfigurations.Vehicle.MaxCapacity,
-		remoteConfigurations.Vehicle.VIN,
+		configuration.AppInfo.UniqueIdentifier,
+		remoteConfiguration.Vehicle.Name,
+		remoteConfiguration.Vehicle.Type,
+		remoteConfiguration.Vehicle.RegistrationPlate,
+		remoteConfiguration.Vehicle.SeatCapacity,
+		remoteConfiguration.Vehicle.MaxCapacity,
+		remoteConfiguration.Vehicle.VIN,
 	)
 
 	//
@@ -224,18 +239,6 @@ func (app *Application) configure(configuration *config.Configuration) error {
 		app.vehicleInfo,
 	)
 	app.webSocketDashboard = ws.NewWebSocketDashboardServer(configuration.Dashboard.WSHostAddress)
-
-	//
-	// Cloud reporter init.
-	//
-	app.cloudReporter = mockCloudReporter.NewMockedCloudReporter(
-		configuration.Cloud.Host, configuration.Cloud.ReportPeriod)
-
-	//
-	// GPS Module init.
-	//
-	app.geoPositionModule = mockGPSReceiver.NewMockedGPSReceiver(
-		mockGPSReceiver.TestDuration, mockGPSReceiver.KievLatitude, mockGPSReceiver.KievLongitude)
 
 	//
 	// Persistence init.
@@ -254,7 +257,19 @@ func (app *Application) configure(configuration *config.Configuration) error {
 		return err
 	}
 
+	//
+	// Cloud reporter init.
+	//
+	app.cloudReporter = httpCloudReporter.NewHTTPReporter(
+		configuration.Cloud.Host, configuration.Cloud.ReportPeriod,
+		app.vehicleInfo, app.archive,
+	)
+
+	//
+	// Give configuration to main app entity
+	//
 	app.config = configuration
+	app.cloudConfig = remoteConfiguration
 
 	return nil
 }
@@ -298,6 +313,7 @@ func (app *Application) shutdown() {
 	// TODO:
 	//  - listen for sigterm
 	//	- stop services
+	app.archive.StopCurrentRun()
 
 	log.Println("application gracefully closed")
 	os.Exit(0)
@@ -306,6 +322,7 @@ func (app *Application) shutdown() {
 func (app *Application) emergencyStop(err error) {
 	// TODO:
 	//	- stop services
+	app.archive.StopCurrentRun()
 
 	log.Printf("application emergency stopped: %s", err.Error())
 	os.Exit(1)

@@ -64,6 +64,7 @@ type Archive interface {
 	// Sessions
 	//
 	StartRun(routeID string) error
+	GetCurrentRunID() (string, error)
 	StopCurrentRun() error
 
 	//
@@ -91,6 +92,7 @@ type EventStorage interface {
 //
 type RouteService interface {
 	StartRun(routeID string) error
+	GetCurrentRunID() (string, error)
 	StopCurrentRun() error
 	IsCurrentRunActive() (bool, error)
 }

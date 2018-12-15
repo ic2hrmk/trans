@@ -3,6 +3,7 @@ package substituted
 import "trans/client/app/drivers/vehicle-info-storage"
 
 type vehicleInfoStorage struct {
+	uniqueIdentifier  string
 	name              string
 	vehicleType       string
 	registrationPlate string
@@ -12,6 +13,7 @@ type vehicleInfoStorage struct {
 }
 
 func NewSubstitutedVehicleInfoStorage(
+	uniqueIdentifier string,
 	name string,
 	vehicleType string,
 	vehicleRegistrationPlate string,
@@ -20,6 +22,7 @@ func NewSubstitutedVehicleInfoStorage(
 	vin string,
 ) *vehicleInfoStorage {
 	return &vehicleInfoStorage{
+		uniqueIdentifier:  uniqueIdentifier,
 		name:              name,
 		vehicleType:       vehicleType,
 		registrationPlate: vehicleRegistrationPlate,
@@ -31,6 +34,7 @@ func NewSubstitutedVehicleInfoStorage(
 
 func (c *vehicleInfoStorage) GetVehicleInfo() *vehicle_info_storage.VehicleInfo {
 	return &vehicle_info_storage.VehicleInfo{
+		UniqueIdentifier:  c.uniqueIdentifier,
 		Name:              c.name,
 		Type:              c.vehicleType,
 		RegistrationPlate: c.registrationPlate,

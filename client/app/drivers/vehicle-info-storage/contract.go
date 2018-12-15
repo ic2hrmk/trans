@@ -5,6 +5,8 @@ type VehicleInfoStorage interface {
 }
 
 type VehicleInfo struct {
+	UniqueIdentifier string
+
 	Name string
 	Type string
 

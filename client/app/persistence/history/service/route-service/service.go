@@ -1,6 +1,7 @@
 package route_service
 
 import (
+	"fmt"
 	"trans/client/app/persistence/history/model"
 	"trans/client/app/persistence/history/repository"
 )
@@ -41,12 +42,25 @@ func (rcv *RouteService) StartRun(routeID string) error {
 	return nil
 }
 
+func (rcv *RouteService) GetCurrentRunID() (string, error) {
+	activeRuns, err := rcv.runRepository.FindByStatus(model.RunStatusActive)
+	if err != nil {
+		return "", err
+	}
+
+	if len(activeRuns) == 0 {
+		return "", fmt.Errorf("no active runs found")
+	}
+
+	return activeRuns[0].ID, nil
+}
+
 func (rcv *RouteService) StopCurrentRun() error {
 	//
 	// Finish all active runs
 	//
 	activeRuns, err := rcv.runRepository.FindByStatus(model.RunStatusActive)
-	if err != nil {
+	if err != nil && err != repository.ErrRunNotFound {
 		return err
 	}
 
