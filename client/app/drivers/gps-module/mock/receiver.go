@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	KievLatitude  = float32(50.4501)
-	KievLongitude = float32(30.5234)
+	KievLatitude  = float32(50.447147)
+	KievLongitude = float32(30.456202)
 
 	TestDuration = 3 * time.Second
 )
