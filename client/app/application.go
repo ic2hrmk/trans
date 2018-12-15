@@ -322,8 +322,6 @@ func (app *Application) shutdown() {
 func (app *Application) emergencyStop(err error) {
 	// TODO:
 	//	- stop services
-	app.archive.StopCurrentRun()
-
 	log.Printf("application emergency stopped: %s", err.Error())
 	os.Exit(1)
 }
