@@ -1,4 +1,4 @@
-package vehicle
+package route_http_client
 
 import (
 	"errors"
@@ -10,27 +10,27 @@ import (
 	"trans/server/shared/communication/representation"
 )
 
-type vehicleClient struct {
+type routeClient struct {
 	address string
 }
 
-func NewVehicleServiceClient(address string) *vehicleClient {
-	return &vehicleClient{address: address}
+func NewRouteServiceClient(address string) *routeClient {
+	return &routeClient{address: address}
 }
 
-func (rcv *vehicleClient) GetVehicleByUniqueIdentifier(
-	in *representation.GetVehicleRequest,
+func (rcv *routeClient) GetRouteByID(
+	in *representation.GetRouteRequest,
 ) (
-	*representation.GetVehicleResponse, error,
+	*representation.GetRouteResponse, error,
 ) {
-	out := &representation.GetVehicleResponse{}
+	out := &representation.GetRouteResponse{}
 	errResp := &representation.ErrorResponse{}
 
 	response, err := resty.R().
-		SetQueryParam("uniqueIdentifier", in.UniqueIdentifier).
+		SetQueryParam("routeId", in.RouteID).
 		SetResult(&out).
 		SetError(&errResp).
-		Get(fmt.Sprintf("%s/api/vehicles", rcv.address))
+		Get(fmt.Sprintf("%s/api/routes", rcv.address))
 
 	if err != nil {
 		return nil, err

@@ -31,6 +31,18 @@ services:
     restart: always
     depends_on:
     - mongo
+
+  collector:
+    image: golang:latest
+    env_file:
+    - docker-compose.env
+    volumes:
+    - .:/go/src/trans/server/
+    working_dir: /go/src/trans/server/
+    command: go run ./entry/main.go --kind=collector
+    restart: always
+    depends_on:
+    - mongo
   #
   # 3-rd parties
   #
@@ -64,3 +76,4 @@ services:
     depends_on:
     - route
     - vehicle
+    - collector

@@ -1,4 +1,4 @@
-package route
+package route_service
 
 import "trans/server/shared/communication/representation"
 

@@ -3,8 +3,8 @@ package remote_configurator
 import (
 	"fmt"
 	"trans/client/app/cloud/configurator"
-	"trans/server/shared/communication/client/route/http"
-	"trans/server/shared/communication/client/vehicle/http"
+	"trans/server/shared/communication/client/route-service/http"
+	"trans/server/shared/communication/client/vehicle-service/http"
 	"trans/server/shared/communication/representation"
 )
 
@@ -24,7 +24,7 @@ func NewCloudConfigurator(
 }
 
 func (rcv *cloudConfigurator) GetRemoteConfigurations() (*cloud_configurator.RemoteConfigurations, error) {
-	vehicleServiceClient := vehicle.NewVehicleServiceClient(rcv.cloudHost)
+	vehicleServiceClient := vehicle_http_client.NewVehicleServiceClient(rcv.cloudHost)
 
 	remoteVehicleInfo, err := vehicleServiceClient.GetVehicleByUniqueIdentifier(&representation.GetVehicleRequest{
 		UniqueIdentifier: rcv.apiKey,
@@ -42,7 +42,7 @@ func (rcv *cloudConfigurator) GetRemoteConfigurations() (*cloud_configurator.Rem
 		VIN:               remoteVehicleInfo.VIN,
 	}
 
-	routeServiceClient := route.NewRouteServiceClient(rcv.cloudHost)
+	routeServiceClient := route_http_client.NewRouteServiceClient(rcv.cloudHost)
 
 	remoteRouteInfo, err := routeServiceClient.GetRouteByID(&representation.GetRouteRequest{
 		RouteID: remoteVehicleInfo.RouteID,

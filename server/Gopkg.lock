@@ -27,6 +27,14 @@
   revision = "eeefdecb41b842af6dc652aaea4026e8403e62df"
 
 [[projects]]
+  digest = "1:e9d5b80e1c25c1c79a2b2cfa97bf114456345d3c7c345a875c7b7badc70aa975"
+  name = "github.com/go-ozzo/ozzo-validation"
+  packages = ["."]
+  pruneopts = ""
+  revision = "106681dbb37bfa3e7683c4c8129cb7f5925ea3e9"
+  version = "v3.5.0"
+
+[[projects]]
   digest = "1:b1c20a31ef35f8f4ffcaf3c8673fc93344e24f7eb621bd1dbdc4c258c80cca50"
   name = "github.com/go-resty/resty"
   packages = ["."]
@@ -115,6 +123,7 @@
     "github.com/emicklei/go-restful",
     "github.com/globalsign/mgo",
     "github.com/globalsign/mgo/bson",
+    "github.com/go-ozzo/ozzo-validation",
     "github.com/go-resty/resty",
     "github.com/google/uuid",
     "github.com/joho/godotenv",

@@ -62,6 +62,7 @@ func (rcv *VehicleService) getVehicleByUniqueIdentifier(
 	// Assemble response
 	//
 	out := &representation.GetVehicleResponse{
+		VehicleID:         vehicle.VehicleID,
 		RegistrationPlate: vehicle.RegistrationPlate,
 		VIN:               vehicle.VIN,
 		RouteID:           vehicle.RouteID,

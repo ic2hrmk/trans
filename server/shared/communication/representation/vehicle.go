@@ -5,6 +5,7 @@ type GetVehicleRequest struct {
 }
 
 type GetVehicleResponse struct {
+	VehicleID         string `json:"vehicleId"`
 	Name              string `json:"name"`
 	Type              string `json:"type"`
 	RouteID           string `json:"routeId"`
